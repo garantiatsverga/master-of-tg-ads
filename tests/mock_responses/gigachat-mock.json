@@ -1,0 +1,26 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "/chat/completions"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "choices": [
+            {
+              "message": {
+                "role": "assistant",
+                "content": "This is a mock response from GigaChat API"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

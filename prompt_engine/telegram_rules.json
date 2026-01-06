@@ -1,0 +1,182 @@
+{
+  "ad_policies_and_guidelines": {
+    "description": "These Ad Policies and Guidelines apply to all ads displayed on the Telegram Ad Platform and describe what ad content is allowed on Telegram.",
+    "responsibilities": [
+      "these Ad Policies and Guidelines",
+      "Telegram Ad Platform Terms of Service",
+      "Telegram Terms of Service and",
+      "Telegram Privacy Policy."
+    ],
+    "sections": {
+      "ad_format": {
+        "description": "Each ad consists of an ad text and a button that opens a link to the advertised product. The maximum length of the ad text is 160 characters including spaces."
+      },
+      "editorial_requirements": {
+        "description": "Standard requirements of style, clarity, spelling and punctuation apply to all ads. Numbers, marks and symbols must be used properly. The following is not allowed:",
+        "prohibited_content": [
+          "Profanity or vulgarity, including slur acronyms and spelling variations, in any language, and masked vulgarity (e.g., f**k)",
+          "Unrecognizable or unclear meaning, such as overbroad or vague descriptions, repetition of words and phrases",
+          "Excessive or gimmicky use of CaPiTaLiZaTiOn, highlighting, s p a c i n g and s,y,m,b,o,l,s, including Unicode art, ASCII art and box-drawing",
+          "Intrusive, excessive or gimmicky use of emoji and other emoticons",
+          "Line breaks, bullet points, numbering lists"
+        ]
+      },
+      "link_format": {
+        "description": "In addition to the main ad link submitted in the ‘URL’ field, ads may also include one optional link in the ad text itself, using the format the format @link, t.me/link, or t.me/link/123. The ad link and the link in the ad text must both lead to the same destination. If the destination is a Telegram bot, links may include start parameters for the bot.",
+        "prohibited_content": [
+          "Using more than one link in the ad text",
+          "Using any unacceptable link formats, such as URL shorteners or an IP-address in the place of the link, even if it ultimately leads to a valid destination"
+        ]
+      },
+      "destination_requirements": {
+        "description": "To keep all ads beneficial for both Telegram users and advertisers, these Ad Policies and Guidelines set out requirements for proper destinations.",
+        "subsections": {
+          "destination_quality": {
+            "description": "Ad destinations must have quality, original content and provide a proper user experience. Particularly, the following applies:",
+            "requirements": [
+              "Telegram channels and bots must have both a profile image and a complete text in their ‘about’ or ‘description’ section.",
+              "Bots must be beneficial to the user and are expected to provide a user experience and interfaces that are consistent with the capabilities of the Bot Platform.",
+              "Destinations using excessive CAPITALIZATION, highlighting, emoji, punctuation (exclamation marks etc.) or strong language are not allowed."
+            ]
+          },
+          "destination_functionality": {
+            "description": "Ad destinations must be functional, technically complete, and active. Particularly, the following applies:",
+            "requirements": [
+              "Empty or abandoned Telegram channels are not allowed as destinations.",
+              "Telegram channels must have had some activity at least once in the two weeks prior to review.",
+              "Destination bots must respond to commands properly on both mobile and desktop devices.",
+              "Inactive, expired and inaccessible websites are not allowed. This covers websites “under construction”, websites returning error codes, preventing access by a paywall or login form, websites unavailable from targeted locations, and websites that fail to load."
+            ]
+          },
+          "irrelevant_destinations": {
+            "description": "Destinations must match the ad text and may not be used only for redirecting to other landing pages. Particularly, the following is not allowed:",
+            "requirements": [
+              "The language of the targeted channel must be the same as the language of the ad and of the destination.",
+              "Destinations not corresponding with the ad text, e.g., cat food ads with links to an online clothing store",
+              "Mock destinations created solely for displaying other ads or collecting user data with “call me back” forms or similar",
+              "Mostly noninteractive bots designed to redirect elsewhere",
+              "Websites that automatically redirect users to a different webpage or domain, e.g., through 302-redirect or .htaccess-redirect"
+            ]
+          },
+          "manipulation_of_content": {
+            "description": "The contents of a destination may not be altered to scam users or evade moderation review. Advertisers using manipulated destinations may be suspended without notice. Particularly, the following is not allowed:",
+            "requirements": [
+              "Concealing or replacing the content of the destination to pass the ad review",
+              "Spoofing and cloaking, such as when a destination imitates a legitimate website or uses names of other brands to mislead visitors"
+            ]
+          }
+        }
+      },
+      "prohibited_content": {
+        "description": "These Ad Policies and Guidelines prohibit some types of content to ensure a safe and pleasant experience for Telegram users. The following requirements apply to ads on the Telegram Ad Platform and to the products they promote, whether implied or explicit. All examples given are non-exhaustive.",
+        "subsections": {
+          "graphic_shocking_or_sexual_content": {
+            "description": "Ads must not promote graphic, shocking, or sexual content, products and services.",
+            "examples": [
+              "Gruesome, disgusting, or shocking imagery, including gore, bodily fluids, accident photos, graphic details of torture",
+              "Nudity, sexually explicit and sexually suggestive content, including excessively exposed intimate body parts, sexual merchandize and entertainment, dating services"
+            ]
+          },
+          "hate_violence_harassment": {
+            "description": "Ads must not promote hatred, intolerance, harassment, discrimination, violence, or abuse.",
+            "examples": [
+              "Violence and its promotion, including supporting organizations or movements with ties to violence",
+              "Promoting harassment or bullying, including dehumanizing speech, statements of inferiority, defamatory content, disclosing contact details or personal data",
+              "Discrimination towards individuals, groups, or organizations, including hateful messages on the basis of race, religion, color, national or ethnic origin, age, beliefs, sexual orientation or practices, physical or mental abilities"
+            ]
+          },
+          "third_party_rights": {
+            "description": "Ads and promoted content must not violate third party rights, including trademark, copyright, privacy or other personal or proprietary rights.",
+            "examples": [
+              "Unauthorized distribution of copyrighted content, including pirated software and content such as movies, music, or books",
+              "Plagiarism, including impersonating public figures or brands, misusing brand logos or assets, e.g., the Telegram logo"
+            ]
+          },
+          "deceptive_misleading_or_predatory_advertising": {
+            "description": "Ads must not contain information that is false, misleading or simply does not match the product. This includes false statements, claims or offers, together with predatory advertising practices.",
+            "examples": [
+              "Clickbait or similar unrealistic statements, including you-just-won-X claims, shock or scare tactics",
+              "Exaggerated comparisons and absolute claims, including unsupported use of comparatives and superlatives: “highest incomes”, “best company”, and comparing your brand to a different one",
+              "Highlighting personal characteristics (e.g., ethnicity, religion, location, financial status), including asking personal questions: “Do you like channels about finance?”, “Looking to pay off high debt?”",
+              "Implying negative outcomes for the viewer: “Check out our channel so you don't get scammed”",
+              "Capitalizing on tragedies, health crises or acts of mass violence"
+            ]
+          },
+          "political_ads_sensitive_topics_religion": {
+            "description": "Ads must not promote political campaigns, elections, political parties, candidates, political or religious movements. Ads that are related to ongoing sensitive events or sensitive topics can be suspended for the meantime.",
+            "examples": [
+              "Advocating for or against a politician, political party, or political movement",
+              "Exploiting political controversy, including encouraging political unrest, disrupting public order",
+              "Advocating for or against religious beliefs, including promotion of religious practices, rituals"
+            ]
+          },
+          "gambling": {
+            "description": "Ads must not promote online or offline gambling, gaming, or casino-based activities involving real money, prizes, or goods of any value.",
+            "examples": [
+              "Games of chance or casinos, including sports betting, lotteries, bingo, fantasy sports",
+              "Tips, odds, forecasts, including sports picks, odds calculators"
+            ]
+          },
+          "deceptive_or_harmful_financial_products_or_services": {
+            "description": "Ads must not promote content, products, or services associated with deceptive or harmful financial practices. When ads or destinations promote a paid product, the terms of purchase must be explicit and easy to understand.",
+            "examples": [
+              "Payday loans, cash loans, predatory lending, including short-term loans",
+              "Get-rich-quick offers, pyramid schemes, multilevel marketing, including offers of investment with guaranteed return, claims on providing insider tips on investments",
+              "Concealing or masking significant information about the promoted paid product, such as fees, terms, payment deadlines."
+            ]
+          },
+          "uncertified_medical_services_medications_supplements": {
+            "description": "Promoted products must comply with all local regulations and sellers must be properly licensed. Ads must not promote content, products or services implicitly or explicitly related to any unverified health and wellness benefits.",
+            "examples": [
+              "Nutrition products, including weight loss or gain products, herbal drugs, dietary supplements, pregnancy, and fertility-related products",
+              "Medicines not approved by the respective local regulatory body",
+              "Sale of medicines or medical products by a shop or entity that is not government-registered and authorized",
+              "Unlicensed medical devices, services and treatments",
+              "Prescriptions for medications",
+              "Products with unverified claims of healthful, curative or stimulating effects, including methods suggesting unrealistic health improvements"
+            ]
+          },
+          "drugs_alcohol_tobacco": {
+            "description": "Ads must not promote psychoactive substances, alcoholic beverages or tobacco products.",
+            "examples": [
+              "Alcoholic beverages, including home brewing kits",
+              "Tobacco, including e-cigarettes, rolling papers, chewing tobacco",
+              "Recreational drugs, including equipment and paraphernalia, e.g., pipes, bongs",
+              "Instructions on producing drugs"
+            ]
+          },
+          "weapons_firearms_explosives_ammunition": {
+            "description": "Ads must not promote the sale of weapons, explosives or ammunition, or any related content.",
+            "examples": [
+              "Firearms, including sporting, recreational guns, or any antique functioning guns that can cause harm",
+              "Ammunition or accessories, including any firearm parts or components, even unfinished, such as magazines, scopes, silencers",
+              "Knives and other melee weapons, including pepper spray, daggers, axes",
+              "Explosives, including bombs, grenades, fireworks, or firecrackers",
+              "Instructions on assembling or acquiring any product covered in this section"
+            ]
+          },
+          "spam_software_malware_hacking": {
+            "description": "Ads must not promote content, products, or services that facilitate unsolicited communications, are intended to harm or gain unauthorized access to a user's device, or cause deceptive or unexpected consequences.",
+            "examples": [
+              "Social media growth manipulation, including encouraging growth of social media profiles",
+              "Incentivized or automated clicks, including requests to perform actions on websites or services, complete online surveys",
+              "Services for generating automated traffic, including services for inflating metrics/followers, sending automated content to social media platforms or other services",
+              "Phishing, including promotion of services that trick a user into providing personal or other information",
+              "Software causing deceptive or unexpected consequences, including modified apps containing malware, viruses, or any other malicious code"
+            ]
+          },
+          "products_of_questionable_legality": {
+            "description": "Ads must not promote content, products, or services of questionable legality.",
+            "examples": [
+              "Forgery, including fake IDs, passports, visas, official documents",
+              "Human-trafficking, including marriage brokering",
+              "Stolen or leaked data, including carding, passwords to subscription services",
+              "Sale of body parts, including bodily fluids",
+              "Counterfeit products, including fake or bootleg goods, inauthentic artwork or digital goods, counterfeit currency"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

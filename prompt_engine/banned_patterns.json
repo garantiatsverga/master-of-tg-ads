@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "description": "Быстрые паттерны для автоматической проверки безопасности",
+  
+  "quick_checks": {
+    "profanity_patterns": [
+      "\\b(fuck|shit|bitch|asshole|cunt|dick|pussy|whore|slut)\\b",
+      "\\b(хуй|пизда|ебать|блядь|сука|пидор|гомик|пидорас|гондон)\\b"
+    ],
+    
+    "dangerous_content_indicators": [
+      "наркотики?|drugs?",
+      "оружие|weapons?|firearms?",
+      "взрывчатка|explosives?",
+      "порно|porn|xxx|секс|sex"
+    ],
+    
+    "scam_indicators": [
+      "быстр(ый|о) (зараб|деньг|богат)",
+      "гарантированн(ый|о) (доход|прибыль)",
+      "(100%|100 процентов) (гарантия|успех)",
+      "работа на дому (без опыта|без вложений)"
+    ]
+  },
+  
+  "telegram_specific": {
+    "prohibited_link_formats": [
+      "bit\\.ly/",
+      "tinyurl\\.com/",
+      "goo\\.gl/",
+      "ow\\.ly/"
+    ],
+    
+    "required_elements": [
+      "@link",
+      "t\\.me/link"
+    ]
+  }
+}

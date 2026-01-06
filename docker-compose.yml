@@ -1,0 +1,166 @@
+version: '3.8'
+
+services:
+  # PostgreSQL для хранения текстовых данных
+  postgres:
+    image: postgres:15-alpine
+    container_name: ai_assistant_postgres
+    environment:
+      POSTGRES_USER: ai_user
+      POSTGRES_PASSWORD: ai_password
+      POSTGRES_DB: ai_assistant_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_user -d ai_assistant_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai_network
+
+  # MinIO для S3-совместимого хранилища изображений
+  minio:
+    image: minio/minio:latest
+    container_name: ai_assistant_minio
+    environment:
+      MINIO_ROOT_USER: minio_admin
+      MINIO_ROOT_PASSWORD: minio_password
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - ai_network
+
+  # Создание бакета в MinIO при запуске
+  minio-setup:
+    image: minio/mc:latest
+    container_name: ai_assistant_minio_setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 minio_admin minio_password &&
+      /usr/bin/mc mb myminio/ai-banners || true &&
+      /usr/bin/mc policy set public myminio/ai-banners
+      "
+    networks:
+      - ai_network
+
+  # Stable Diffusion для генерации изображений
+  stable-diffusion:
+    image: stabilityai/stable-diffusion:latest
+    container_name: ai_assistant_stable_diffusion
+    environment:
+      - SD_WEBUI_PORT=7860
+    ports:
+      - "7860:7860"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - ai_network
+
+  # GigaChat API mock сервер (для разработки)
+  gigachat-mock:
+    image: wiremock/wiremock:latest
+    container_name: ai_assistant_gigachat_mock
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./tests/mock_responses:/home/wiremock
+    command: --global-response-templating
+    networks:
+      - ai_network
+
+  # Приложение
+  ai-assistant:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai_assistant_app
+    environment:
+      - POSTGRES_DSN=postgresql://ai_user:ai_password@postgres:5432/ai_assistant_db
+      - S3_ENDPOINT=http://minio:9000
+      - S3_ACCESS_KEY=minio_admin
+      - S3_SECRET_KEY=minio_password
+      - S3_BUCKET=ai-banners
+      - S3_REGION=us-east-1
+      - STABLE_DIFFUSION_URL=http://stable-diffusion:7860
+      - GIGACHAT_API_KEY=test_api_key
+      - GIGACHAT_BASE_URL=http://gigachat-mock:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-setup:
+        condition: service_completed_successfully
+      stable-diffusion:
+        condition: service_started
+      gigachat-mock:
+        condition: service_started
+    ports:
+      - "8000:8000"
+    networks:
+      - ai_network
+    volumes:
+      - .:/app
+    working_dir: /app
+
+  # Сервис для запуска тестов
+  ai-assistant-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai_assistant_tests
+    environment:
+      - POSTGRES_DSN=postgresql://ai_user:ai_password@postgres:5432/ai_assistant_db
+      - S3_ENDPOINT=http://minio:9000
+      - S3_ACCESS_KEY=minio_admin
+      - S3_SECRET_KEY=minio_password
+      - S3_BUCKET=ai-banners
+      - S3_REGION=us-east-1
+      - STABLE_DIFFUSION_URL=http://stable-diffusion:7860
+      - GIGACHAT_API_KEY=test_api_key
+      - GIGACHAT_BASE_URL=http://gigachat-mock:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-setup:
+        condition: service_completed_successfully
+      stable-diffusion:
+        condition: service_started
+      gigachat-mock:
+        condition: service_started
+    networks:
+      - ai_network
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: sh -c "pip install pytest pytest-asyncio && python -m pytest tests/ -v"
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  ai_network:
+    driver: bridge
