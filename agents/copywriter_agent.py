@@ -36,31 +36,15 @@ class CopywriterAgent(BaseAgent):
         """
         Основной процесс:
         1. Берем промпт.
-        2. Идем к LLM через MCP Tool.
-        3. Проверяем результат.
+        2. Временно отключаем генерацию текста через API GigaChat.
+        3. Возвращаем фиктивный текст.
         """
         
         text_prompt = context.get("target_text_prompt")
         
-        try:
-            # Обращаемся к "тулз” генерации текста, который мы зарегистрировали в MCPServer
-            # Инструмент text.generate вызовет наш text_llm_adapter
-            response = await self.mcp.call(
-                "text.generate",
-                agent_name=self.name,
-                prompt=text_prompt,
-                temperature=0.7 # Можно передавать настройки стиля
-            )
-            final_text = response.get("text", "")
-        except Exception as e:
-            error(f"[{self.name}] Ошибка при генерации текста: {e}", exp=True, textwrapping=True, wrapint=80)
-            final_text = ""
-
-        # Бизнес-логика: проверка длины для Telegram Ads
-        if len(final_text) > 160:
-            warning(f"[{self.name}] Текст превышает лимит TG Ads: {len(final_text)} симв.", exp=True, textwrapping=True, wrapint=80)
-            context["warning"] = "Текст слишком длинный"
-
+        # Временно отключаем генерацию текста через API GigaChat
+        final_text = "Текст временно отключен"
+        
         # Записываем результат в общий журнал (контекст)
         context["final_advertising_text"] = final_text
         

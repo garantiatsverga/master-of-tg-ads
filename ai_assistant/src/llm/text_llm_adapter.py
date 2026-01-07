@@ -15,7 +15,7 @@ class TextLLMAdapter:
         self.base_url = self.config['base_url']
         self.timeout = self.config.get('timeout', 120)
         
-    async def generate_ad_copy(self, 
+    async def generate_ad_copy(self,
                              product_info: str,
                              style: str = "professional",
                              max_length: int = 160) -> str:
@@ -31,45 +31,8 @@ class TextLLMAdapter:
             Сгенерированный рекламный текст
         """
         
-        prompt = self._create_ad_prompt(product_info, style, max_length)
-        
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                f"{self.base_url}/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "GigaChat",
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": "Ты опытный копирайтер для рекламных баннеров Telegram."
-                        },
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ],
-                    "temperature": self.config.get('temperature', 0.7),
-                    "max_tokens": self.config.get('max_tokens', 500)
-                },
-                timeout=self.timeout
-            ) as response:
-                
-                if response.status == 200:
-                    result = await response.json()
-                    text = result['choices'][0]['message']['content'].strip()
-                    
-                    # Обрезаем до максимальной длины если нужно
-                    if len(text) > max_length:
-                        text = text[:max_length-3] + "..."
-                    
-                    return text
-                else:
-                    error_text = await response.text()
-                    raise Exception(f"GigaChat API error: {response.status} - {error_text}")
+        # Временно отключаем генерацию текста через API GigaChat
+        return "Текст временно отключен"
     
     def _create_ad_prompt(self, product_info: str, style: str, max_length: int) -> str:
         """Создание промпта для генерации рекламного текста"""
@@ -111,20 +74,5 @@ class TextLLMAdapter:
                                        num_variants: int = 3,
                                        max_length: int = 160) -> List[str]:
         """Генерация нескольких вариантов текста"""
-        variants = []
-        
-        styles = ["professional", "creative", "urgent", "emotional", "clear"]
-        
-        for i in range(min(num_variants, len(styles))):
-            try:
-                variant = await self.generate_ad_copy(
-                    product_info=product_info,
-                    style=styles[i],
-                    max_length=max_length
-                )
-                variants.append(variant)
-            except Exception as e:
-                # Продолжаем генерировать остальные варианты при ошибке
-                continue
-        
-        return variants
+        # Временно отключаем генерацию текстовых вариантов через API GigaChat
+        return ["Текст временно отключен"] * num_variants
