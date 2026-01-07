@@ -4,7 +4,7 @@ import simdjson as sd
 from io import BytesIO
 from PIL import Image
 from typing import Dict, Any
-from config_manager import ConfigManager
+from ai_assistant.src.config_manager import ConfigManager
 
 class StableDiffusionAdapter:
     """Адаптер для локального Stable Diffusion 1.5 через AUTOMATIC1111 API"""
@@ -13,18 +13,20 @@ class StableDiffusionAdapter:
         if not config:
             config = ConfigManager.load_config()
         self.config = config['stable_diffusion']
-        
-    async def generate_image(self, prompt: str, 
+    
+    async def generate_image(self, prompt: str,
                            negative_prompt: str = None,
-                           steps: int = None) -> Image.Image:
+                           steps: int = None,
+                           width: int = None,
+                           height: int = None) -> Image.Image:
         """Генерация изображения через SD"""
         
         payload = {
             "prompt": prompt,
             "negative_prompt": negative_prompt or self.config.get('negative_prompt', ''),
             "steps": steps or self.config.get('steps', 25),
-            "width": self.config['width'],   # 1920
-            "height": self.config['height'], # 1080
+            "width": width or self.config['width'],   # 1920
+            "height": height or self.config['height'], # 1080
             "cfg_scale": self.config.get('cfg_scale', 7.5),
             "sampler_name": self.config.get('sampler', 'Euler a'),
             "batch_size": 1

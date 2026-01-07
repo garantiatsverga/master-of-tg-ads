@@ -1,9 +1,10 @@
 # Основные зависимости
-simdjson>=0.10.0
+pysimdjson>=0.10.0
 colordebug>=1.0.1
 requests>=2.0.0
 boto3>=1.0.0
 psycopg2-binary>=2.0.0
+streamlit>=1.28.0
 
 # Зависимости для AI и ML
 # (если используются дополнительные библиотеки)

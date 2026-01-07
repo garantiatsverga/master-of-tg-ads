@@ -58,14 +58,17 @@ services:
     networks:
       - ai_network
 
-  # Stable Diffusion для генерации изображений
+  # Stable Diffusion для генерации изображений (AUTOMATIC1111)
   stable-diffusion:
-    image: stabilityai/stable-diffusion:latest
+    image: ghcr.io/automatic1111/stable-diffusion-webui:latest
     container_name: ai_assistant_stable_diffusion
     environment:
-      - SD_WEBUI_PORT=7860
+      - CLIP_STOP_AT_LAST_LAYERS=2
     ports:
       - "7860:7860"
+    volumes:
+      - ./stable-diffusion-models:/stable-diffusion-webui/models/Stable-diffusion
+    command: --api --listen --port 7860
     deploy:
       resources:
         reservations:
