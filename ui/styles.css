@@ -1,0 +1,78 @@
+.main {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Input field styling */
+.stTextInput>div>div>input {
+    background-color: #2e2e2e;
+    color: #ffffff;
+    border: 1px solid #444444;
+}
+
+/* Button styling */
+.stButton>button {
+    background-color: #4a4a4a;
+    color: #ffffff;
+    border: 1px solid #666666;
+}
+
+.stButton>button:hover {
+    background-color: #5a5a5a;
+}
+
+/* Chat message styling */
+.chat-message {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-message.user {
+    background-color: #2b313e;
+    align-self: flex-end;
+}
+
+.chat-message.bot {
+    background-color: #3a3f4a;
+    align-self: flex-start;
+}
+
+.chat-message .message-content {
+    color: #ffffff;
+}
+
+/* Sidebar styling */
+.stSidebar {
+    background-color: #252526;
+}
+
+/* Header styling */
+.stHeader {
+    color: #ffffff;
+    border-bottom: 1px solid #444444;
+    min-height: 0px;
+    display: flex;
+    align-items: center;
+}
+
+/* Main title styling */
+.stTitle {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+/* Success message styling */
+.stSuccess {
+    background-color: #2d5a3d;
+    color: #ffffff;
+}
+
+/* Error message styling */
+.stError {
+    background-color: #5a2d2d;
+    color: #ffffff;
+}
