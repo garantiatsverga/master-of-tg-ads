@@ -1,2 +1,6 @@
 Требования.txt
 __pycache__/
+stable-diffusion*
+-p/
+.pytest*
+*.log

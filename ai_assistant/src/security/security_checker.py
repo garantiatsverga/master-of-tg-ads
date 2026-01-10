@@ -333,3 +333,13 @@ class SecurityChecker:
         log_dict(stats, "security_check_stats")
         
         return stats
+
+    async def check(self, payload: Dict[str, Any]) -> bool:
+        """Метод для проверки безопасности в BaseAgent"""
+        # Проверяем, есть ли текст для проверки
+        if 'ad_text' in payload:
+            result, _ = await self.check_ad_compliance(payload['ad_text'])
+            return result
+        else:
+            # Если нет текста, считаем, что проверка пройдена
+            return True

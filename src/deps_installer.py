@@ -40,16 +40,6 @@ def check_git():
         sys.exit(1)
 
 
-def check_docker():
-    """Проверка установки Docker."""
-    try:
-        subprocess.run(["docker", "--version"], check=True, capture_output=True)
-        print("✓ Docker установлен")
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        print("Ошибка: Docker не установлен. Пожалуйста, установите Docker с https://www.docker.com/")
-        sys.exit(1)
-
-
 def check_docker_compose():
     """Проверка установки Docker Compose."""
     try:
@@ -160,7 +150,6 @@ def main():
     # Проверка требований
     check_python_version()
     check_git()
-    check_docker()
     check_docker_compose()
     check_nvidia_gpu()
     

@@ -1,0 +1,11 @@
+{
+  "default_template": {
+    "description": "Default template for generating prompts",
+    "structure": {
+      "product": "Product name",
+      "audience": "Target audience",
+      "goal": "Advertising goal",
+      "language": "Language of the advertisement"
+    }
+  }
+}

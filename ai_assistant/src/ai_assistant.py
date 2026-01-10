@@ -84,21 +84,78 @@ class AIAssistant:
         """Инициализация специализированных агентов"""
         try:
             workflow_agents = self.config.get('agents', {}).get('workflow', [])
-             
+              
+            # Создание MCPServer для агентов
+            registry = ToolRegistry()
+            retry_policy = SimpleRetryPolicy()
+            cache_policy = InMemoryCachePolicy()
+            mcp_server = MCPServer(
+                registry=registry,
+                retry_policy=retry_policy,
+                cache_policy=cache_policy,
+                security_checker=self.security_checker
+            )
+              
+            # Регистрация инструментов
+            from agents.tools.image_generation_tool import ImageGenerationTool
+            from agents.tools.compliance_check_tool import ComplianceCheckTool
+            
+            image_tool = ImageGenerationTool()
+            compliance_tool = ComplianceCheckTool()
+            
+            mcp_server.registry.register(image_tool)
+            mcp_server.registry.register(compliance_tool)
+            
+            info(f"Зарегистрирован инструмент: {image_tool.name}")
+            info(f"Зарегистрирован инструмент: {compliance_tool.name}")
+            info(f"Инструменты в реестре: {list(mcp_server.registry._tools.keys())}")
+              
             for agent_name in workflow_agents:
                 if agent_name == 'prompt_agent':
-                    self.agents['prompt_agent'] = PromptAgent(self.config)
+                    # Загрузка правил и шаблонов для PromptAgent
+                    with open('prompt_engine/telegram_rules.json', 'rb') as f:
+                        rules = sd.load(f)
+                    with open('prompt_engine/prompt_templates.json', 'rb') as f:
+                        templates = sd.load(f)
+                    
+                    self.agents['prompt_agent'] = PromptAgent(
+                        mcp_server=mcp_server,
+                        rules=rules,
+                        templates=templates,
+                        security_checker=self.security_checker,
+                        metrics_collector=self.metrics_collector
+                    )
                 elif agent_name == 'copywriter':
-                    self.agents['copywriter'] = CopywriterAgent(self.config)
+                    self.agents['copywriter'] = CopywriterAgent(
+                        mcp_server=mcp_server,
+                        security_checker=self.security_checker,
+                        metrics_collector=self.metrics_collector
+                    )
                 elif agent_name == 'banner_designer':
-                    self.agents['banner_designer'] = BannerDesignerAgent(self.config)
+                    self.agents['banner_designer'] = BannerDesignerAgent(
+                        mcp_server=mcp_server,
+                        security_checker=self.security_checker,
+                        metrics_collector=self.metrics_collector
+                    )
                 elif agent_name == 'qa_compliance':
-                    self.agents['qa_compliance'] = QAComplianceAgent(self.config)
-                 
+                    self.agents['qa_compliance'] = QAComplianceAgent(
+                        mcp_server=mcp_server,
+                        security_checker=self.security_checker,
+                        metrics_collector=self.metrics_collector
+                    )
+                  
                 log_module_initialization(f"Agent: {agent_name}")
-             
+                info(f"Агент {agent_name} инициализирован с mcp_server: {mcp_server}")
+                info(f"Инструменты в mcp_server: {list(mcp_server.registry._tools.keys())}")
+            
+            # Регистрация разрешений для агентов
+            mcp_server.set_agent_permissions("PromptAgent", [])
+            mcp_server.set_agent_permissions("CopywriterAgent", ["text.generate"])
+            mcp_server.set_agent_permissions("BannerDesignerAgent", ["image.generate"])
+            mcp_server.set_agent_permissions("QAComplianceAgent", ["compliance.check"])
+            
             info(f"Загружено {len(self.agents)} специализированных агентов", exp=True)
-             
+              
         except Exception as e:
             error(f"Ошибка инициализации агентов: {e}", exp=True)
             warning("Продолжение в базовом режиме без агентов", exp=True)
@@ -474,6 +531,20 @@ class AIAssistant:
             security_checker=self.security_checker
         )
         
+        # Регистрация инструментов
+        from agents.tools.image_generation_tool import ImageGenerationTool
+        from agents.tools.compliance_check_tool import ComplianceCheckTool
+        
+        image_tool = ImageGenerationTool()
+        compliance_tool = ComplianceCheckTool()
+        
+        mcp_server.registry.register(image_tool)
+        mcp_server.registry.register(compliance_tool)
+        
+        info(f"Зарегистрирован инструмент: {image_tool.name}")
+        info(f"Зарегистрирован инструмент: {compliance_tool.name}")
+        info(f"Инструменты в реестре: {list(mcp_server.registry._tools.keys())}")
+        
         # Загрузка правил и шаблонов
         with open('prompt_engine/telegram_rules.json', 'rb') as f:
             rules = sd.load(f)
@@ -487,7 +558,7 @@ class AIAssistant:
             "designer": BannerDesignerAgent(mcp_server=mcp_server),
             "inspector": QAComplianceAgent(mcp_server=mcp_server)
         }
-
+    
         # Регистрация разрешений для агентов
         mcp_server.set_agent_permissions("CopywriterAgent", ["text.generate"])
         mcp_server.set_agent_permissions("BannerDesignerAgent", ["image.generate"])

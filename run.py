@@ -6,33 +6,8 @@ from typing import Dict, Any
 from colordebug import *
 from ai_assistant.src.ai_assistant import AIAssistant
 
-def check_dependencies():
-    """Проверка и установка зависимостей."""
-    # Проверяем, есть ли файл requirements.txt
-    requirements_file = Path("requirements.txt")
-    if not requirements_file.exists():
-        error("Файл requirements.txt не найден", exp=True)
-        sys.exit(1)
-    
-    # Проверяем, есть ли папка stable-diffusion-models
-    models_dir = Path("stable-diffusion-models")
-    if not models_dir.exists():
-        warning("Папка stable-diffusion-models не найдена. Запуск установщика зависимостей...")
-        try:
-            # Запускаем установщик зависимостей
-            from src.deps_installer import main as install_deps
-            install_deps()
-        except ImportError:
-            error("Не удалось импортировать deps_installer. Пожалуйста, запустите src/deps_installer.py вручную")
-            sys.exit(1)
-        except Exception as e:
-            error(f"Ошибка при установке зависимостей: {e}")
-            sys.exit(1)
-
 async def main():
-    # Проверяем и устанавливаем зависимости
-    check_dependencies()
-    
+
     # Настраиваем логирование
     enable_file_logging("app.log", textwrapping=True, wrapint=80)
     info("Запуск конвейера Master of TG Ads", exp=True, textwrapping=True, wrapint=80)
