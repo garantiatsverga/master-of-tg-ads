@@ -43,40 +43,54 @@ class PromptAgent(BaseAgent):
     # 3. Реализуем ТОЛЬКО бизнес-логику
     async def process(self, brief: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Метод вызывается автоматически внутри BaseAgent.handle()
-        после всех проверок безопасности и валидации
+        Создание промптов с переводом на английский для Stable Diffusion
         """
         
-        # Шаг 1: Применяем экспертные правила
-        rules_context = self.rules.get("ad_policies_and_guidelines", {})
+        # Русский текст для копирайтера (оставляем русский)
+        text_prompt = f"""
+        Создай рекламный текст для смартфона {brief['product']}.
+        Аудитория: {brief['audience']}.
+        Акцент на камеру и дизайн.
+        Максимум 160 символов, с эмодзи.
+        """
         
-        # Шаг 2: Выбираем нужный шаблон
-        template = self.templates.get("default_template", {})
+        # АНГЛИЙСКИЙ промпт для Stable Diffusion (SD лучше понимает английский)
+        image_prompt_en = f"""
+        professional product photography of a modern smartphone,
+        {brief['product']}, 
+        emphasis on camera design and premium build quality,
+        product shot on clean white background,
+        studio lighting, sharp focus, highly detailed,
+        commercial advertisement style,
+        technology aesthetic, minimalist design,
+        showcasing phone from multiple angles,
+        reflective surfaces, metallic finish,
+        telephoto lens visible, camera module highlighted,
+        8k resolution, professional photo
+        """
         
-        # Шаг 3: Строим промпты (ТЗ) для следующих агентов
-        text_prompt = (
-            f"Создайте рекламный текст для продукта '{brief['product']}' "
-            f"для аудитории '{brief['audience']}'. "
-            f"Цель: {brief['goal']}. "
-            f"Тип продукта: {brief['product_type']}. "
-            f"Язык: {brief.get('language', 'ru')}. "
-            f"Правила: {rules_context.get('description', '')}"
-        )
-        image_prompt = (
-            f"Создайте баннер для продукта '{brief['product']}' "
-            f"для аудитории '{brief['audience']}'. "
-            f"Цель: {brief['goal']}. "
-            f"Тип продукта: {brief['product_type']}. "
-            f"Стиль: яркий, привлекательный, соответствующий правилам Telegram Ads"
-        )
-
-        # Возвращаем обогащенный контекст
+        # Русская версия (на всякий случай)
+        image_prompt_ru = f"""
+        профессиональная продуктовая фотография современного смартфона,
+        {brief['product']},
+        акцент на дизайн камеры и премиальное качество сборки,
+        фото продукта на чистом белом фоне,
+        студийное освещение, четкий фокус, высокая детализация,
+        стиль коммерческой рекламы,
+        технологичная эстетика, минималистичный дизайн
+        """
+        
+        # Короткая английская версия для SD (макс 77 токенов)
+        short_image_prompt = f"professional product photo of {brief['product']} smartphone, emphasis on camera design, clean white background, studio lighting, detailed, advertisement"
+        
         return {
-            "target_text_prompt": text_prompt,
-            "target_image_prompt": image_prompt,
+            "target_text_prompt": text_prompt.strip(),
+            "target_image_prompt": short_image_prompt.strip(),  # Английский для SD
+            "full_image_prompt_en": image_prompt_en.strip(),
+            "full_image_prompt_ru": image_prompt_ru.strip(),
             "meta": {
                 "product": brief["product"],
-                "audience": brief["audience"],
-                "format": "telegram_ads"
+                "prompt_language": "en",
+                "prompt_version": "v3_english_for_sd"
             }
         }

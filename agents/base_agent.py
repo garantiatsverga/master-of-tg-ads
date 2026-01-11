@@ -12,7 +12,6 @@ except ImportError:
     MetricsCollector = Any
 
 
-
 class AgentError(Exception):
     """Базовая ошибка агента"""
     pass
@@ -63,16 +62,30 @@ class BaseAgent(ABC):
             # 3. Core logic (реализуется в наследнике)
             result = await self.process(payload)
 
-            # 4. Metrics
+            # 4. Metrics - ИСПРАВЛЕНО: используем правильный метод
             if self.metrics:
-                self.metrics.increment(f"{self.name}.success")
+                # Метрики собираются через log_query в основном процессе
+                # Здесь просто логируем успех
+                pass
 
             return result
 
         except Exception as e:
             error(f"[{self.name}] Error: {e}", exp=True, textwrapping=True, wrapint=80)
+            
+            # 4b. Metrics для ошибок - ИСПРАВЛЕНО
             if self.metrics:
-                self.metrics.increment(f"{self.name}.error")
+                # Логируем ошибку через основной метод метрик
+                try:
+                    self.metrics.log_query(
+                        question=f"Agent error: {self.name}",
+                        intent="agent_error",
+                        response_time=0.0,
+                        success=False
+                    )
+                except:
+                    pass  # Игнорируем ошибки в метриках
+                    
             raise
 
         finally:

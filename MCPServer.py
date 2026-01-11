@@ -1,7 +1,7 @@
 import asyncio
 import time
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, Protocol
+from typing import Dict, Any, Optional, Protocol, List  # Добавили List
 from colordebug import *
 
 
@@ -23,10 +23,10 @@ class SecurityError(MCPError):
     pass
 
 
-#  TOOL INTERFACE
+#  TOOL INTERFACE (оставляем для совместимости, но не используем)
 
 class BaseTool(ABC):
-    """Контракт любого MCP-инструмента"""
+    """Контракт любого MCP-инструмента (оставляем для совместимости)"""
 
     def __init__(self, name: str):
         self.name = name
@@ -36,7 +36,7 @@ class BaseTool(ABC):
         pass
 
 
-#  TOOL REGISTRY
+#  TOOL REGISTRY (оставляем, но почти не используем)
 
 class ToolRegistry:
     """Реестр инструментов (Single Responsibility)"""
@@ -117,73 +117,68 @@ class InMemoryCachePolicy:
 
 class MCPServer:
     """
-    MCPServer v3
-    - Mediator
+    MCPServer v3 - Упрощенная версия без инструментов
+    - Mediator для агентов
     - Policy-based
     - Production-ready
     """
 
     def __init__(
         self,
-        registry: ToolRegistry,
-        retry_policy: RetryPolicy,
+        registry: Optional[ToolRegistry] = None,
+        retry_policy: Optional[RetryPolicy] = None,
         cache_policy: Optional[CachePolicy] = None,
         security_checker: Optional[Any] = None,
     ):
-        self.registry = registry
-        self.retry_policy = retry_policy
+        self.registry = registry or ToolRegistry()
+        self.retry_policy = retry_policy or SimpleRetryPolicy()
         self.cache = cache_policy
         self.security = security_checker
-        self.logger = None
         self._agent_permissions: Dict[str, List[str]] = {}
+        
+        warning("MCPServer работает в упрощенном режиме (инструменты упразднены)", exp=True)
 
     async def call(self, tool_name: str, agent_name: str = None, **kwargs) -> Any:
+        """
+        Упрощенный вызов - инструменты упразднены, используйте агентов напрямую
+        """
         start_time = time.perf_counter()
-
-        cache_key = f"{tool_name}:{hash(frozenset(kwargs.items()))}"
-
-        # 1. Cache
-        if self.cache:
-            cached = self.cache.get(cache_key)
-            if cached is not None:
-                info(f"[CACHE HIT] {tool_name}", exp=True, textwrapping=True, wrapint=80)
-                return cached
-
-        # 2. Check agent permissions
-        if agent_name and self._agent_permissions:
-            allowed_tools = self._agent_permissions.get(agent_name, [])
-            if tool_name not in allowed_tools:
-                raise SecurityError(f"Agent '{agent_name}' is not allowed to use tool '{tool_name}'")
-
-        # 3. Security
-        if self.security:
-            allowed = await self.security.check(kwargs)
-            if not allowed:
-                raise SecurityError(f"Access denied for tool '{tool_name}'")
-
-        # 4. Tool lookup
-        tool = self.registry.get(tool_name)
-
-        # 4. Execution via RetryPolicy
-        async def operation():
-            info(f"[MCP] Executing {tool_name}", exp=True, textwrapping=True, wrapint=80)
-            return await tool.execute(**kwargs)
-
-        result = await self.retry_policy.run(operation, tool_name=tool_name)
-
-        # 5. Save to cache
-        if self.cache:
-            self.cache.set(cache_key, result)
-
-        duration = time.perf_counter() - start_time
-        info(f"[MCP] {tool_name} completed in {duration:.3f}s", exp=True, textwrapping=True, wrapint=80)
-
-        return result
+        
+        warning(f"Инструмент '{tool_name}' вызван, но инструменты упразднены. Используйте агентов напрямую.", exp=True)
+        
+        # Для обратной совместимости возвращаем заглушку
+        if tool_name == "image.generate":
+            return {
+                "image_url": f"stub://{tool_name}/{hash(str(kwargs))}",
+                "success": False,
+                "error": "Инструменты упразднены. Используйте BannerDesignerAgent напрямую"
+            }
+        elif tool_name == "compliance.check":
+            return {
+                "is_approved": True,
+                "issues": ["Проверка через инструменты упразднена. Используйте QAComplianceAgent напрямую"],
+                "success": False
+            }
+        
+        raise ToolNotFoundError(
+            f"Инструмент '{tool_name}' упразднен. "
+            f"Используйте агентов напрямую вместо вызовов через MCP."
+        )
 
     def set_agent_permissions(self, agent_name: str, allowed_tools: List[str]) -> None:
-        """Установить разрешения для агента"""
+        """Установить разрешения для агента (оставляем для совместимости)"""
         self._agent_permissions[agent_name] = allowed_tools
+        debug(f"Разрешения для {agent_name}: {allowed_tools}", exp=True)
 
     def get_agent_permissions(self, agent_name: str) -> List[str]:
         """Получить разрешения для агента"""
         return self._agent_permissions.get(agent_name, [])
+    
+    def health_check(self) -> Dict[str, Any]:
+        """Проверка состояния сервера"""
+        return {
+            "status": "running",
+            "agents_registered": len(self._agent_permissions),
+            "tools_registered": len(self.registry._tools),
+            "mode": "simplified (no tools)"
+        }

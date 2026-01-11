@@ -1,0 +1,6 @@
+{
+  "default_template": {
+    "text_prompt": "Создай рекламный текст для {product}. Аудитория: {audience}. Цель: {goal}. Стиль: {style}",
+    "image_prompt": "Создай баннер для {product}. Аудитория: {audience}. Стиль: яркий, привлекательный"
+  }
+}

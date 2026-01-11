@@ -3,6 +3,7 @@ from typing import Dict, Any, List, Optional, Tuple
 from pathlib import Path
 import sys
 import simdjson as sd
+import os
 
 # Добавляем пути для импортов
 sys.path.append(str(Path(__file__).parent.parent))
@@ -29,7 +30,7 @@ from agents.qa_compliance_agent import QAComplianceAgent
 class AIAssistant:
     """
     Главный оркестратор AI ассистента для создания рекламных баннеров.
-    Управляет всем процессом от идеи до финальной проверки.
+    Упрощенная версия без инструментов MCP.
     """
     
     def __init__(self, config_path: str = None):
@@ -41,13 +42,20 @@ class AIAssistant:
         """
         log_application_start()
         
+        # Определяем базовый путь
+        self.base_dir = Path(__file__).parent.parent
+        
+        # Если config_path не указан, ищем относительно base_dir
+        if config_path is None:
+            config_path = str(self.base_dir / 'config.yaml')
+        
         # Загрузка конфигурации
         self.config = ConfigManager.load_config(config_path)
         log_module_initialization("ConfigManager")
         
         # Настройка логирования
         setup_logging(
-            log_file=self.config.get('system', {}).get('log_file', 'ai_assistant.log'),
+            log_file=str(self.base_dir / self.config.get('system', {}).get('log_file', 'ai_assistant.log')),
             log_level=self.config.get('system', {}).get('log_level', 'info'),
             console_output=True
         )
@@ -78,45 +86,97 @@ class AIAssistant:
         
         # Подключение к хранилищам
         asyncio.create_task(self._connect_storage())
-
     
     def _initialize_agents(self):
-        """Инициализация специализированных агентов"""
+        """Инициализация специализированных агентов (без инструментов)"""
         try:
             workflow_agents = self.config.get('agents', {}).get('workflow', [])
-              
-            # Создание MCPServer для агентов
-            registry = ToolRegistry()
-            retry_policy = SimpleRetryPolicy()
-            cache_policy = InMemoryCachePolicy()
+            
+            # Создание MCPServer (упрощенный, без инструментов)
             mcp_server = MCPServer(
-                registry=registry,
-                retry_policy=retry_policy,
-                cache_policy=cache_policy,
+                registry=ToolRegistry(),  # Пустой реестр
+                retry_policy=SimpleRetryPolicy(),
+                cache_policy=InMemoryCachePolicy(),
                 security_checker=self.security_checker
             )
-              
-            # Регистрация инструментов
-            from agents.tools.image_generation_tool import ImageGenerationTool
-            from agents.tools.compliance_check_tool import ComplianceCheckTool
             
-            image_tool = ImageGenerationTool()
-            compliance_tool = ComplianceCheckTool()
+            info(f"Инициализация {len(workflow_agents)} агентов...", exp=True)
             
-            mcp_server.registry.register(image_tool)
-            mcp_server.registry.register(compliance_tool)
-            
-            info(f"Зарегистрирован инструмент: {image_tool.name}")
-            info(f"Зарегистрирован инструмент: {compliance_tool.name}")
-            info(f"Инструменты в реестре: {list(mcp_server.registry._tools.keys())}")
-              
             for agent_name in workflow_agents:
                 if agent_name == 'prompt_agent':
-                    # Загрузка правил и шаблонов для PromptAgent
-                    with open('prompt_engine/telegram_rules.json', 'rb') as f:
+                    # Используем пути относительно текущей директории
+                    rules_path = Path('prompt_engine/telegram_rules.json')
+                    templates_path = Path('prompt_engine/prompt_templates.json')
+                    
+                    # Если файлы в другой директории, ищем их
+                    if not rules_path.exists():
+                        # Пробуем другие возможные пути
+                        possible_paths = [
+                            Path('prompt_engine/telegram_rules.json'),
+                            Path('/content/master-of-tg-ads/prompt_engine/telegram_rules.json'),
+                            Path(__file__).parent.parent / 'prompt_engine' / 'telegram_rules.json',
+                            Path.cwd() / 'prompt_engine' / 'telegram_rules.json'
+                        ]
+                        
+                        for path in possible_paths:
+                            if path.exists():
+                                rules_path = path
+                                info(f"Найден файл правил: {rules_path}", exp=True)
+                                break
+                    
+                    if not templates_path.exists():
+                        # Пробуем другие возможные пути
+                        possible_paths = [
+                            Path('prompt_engine/prompt_templates.json'),
+                            Path('/content/master-of-tg-ads/prompt_engine/prompt_templates.json'),
+                            Path(__file__).parent.parent / 'prompt_engine' / 'prompt_templates.json',
+                            Path.cwd() / 'prompt_engine' / 'prompt_templates.json'
+                        ]
+                        
+                        for path in possible_paths:
+                            if path.exists():
+                                templates_path = path
+                                break
+                    
+                    # Если файла prompt_templates.json нет, создаем минимальный
+                    if not templates_path.exists():
+                        warning(f"Файл {templates_path} не найден, создаю минимальный шаблон", exp=True)
+                        templates_path.parent.mkdir(parents=True, exist_ok=True)
+                        minimal_template = {
+                            "default_template": {
+                                "text_prompt": "Создай рекламный текст для {product}. Аудитория: {audience}. Цель: {goal}. Стиль: {style}",
+                                "image_prompt": "Создай баннер для {product}. Аудитория: {audience}. Стиль: яркий, привлекательный"
+                            }
+                        }
+                        with open(templates_path, 'w') as f:
+                            import json
+                            json.dump(minimal_template, f, indent=2, ensure_ascii=False)
+                    
+                    if not rules_path.exists():
+                        error(f"Файл правил не найден. Проверенные пути: {possible_paths}", exp=True)
+                        # Создаем минимальные правила
+                        warning("Создаю минимальные правила...", exp=True)
+                        minimal_rules = {
+                            "version": "1.0",
+                            "description": "Минимальные правила для тестирования",
+                            "checks": [
+                                {"name": "text_length", "max_chars": 160},
+                                {"name": "no_profanity", "enabled": True}
+                            ]
+                        }
+                        rules_path.parent.mkdir(parents=True, exist_ok=True)
+                        with open(rules_path, 'w') as f:
+                            json.dump(minimal_rules, f, indent=2, ensure_ascii=False)
+                        info(f"Созданы минимальные правила: {rules_path}", exp=True)
+                    
+                    with open(rules_path, 'rb') as f:
                         rules = sd.load(f)
-                    with open('prompt_engine/prompt_templates.json', 'rb') as f:
-                        templates = sd.load(f)
+                    
+                    if templates_path.exists():
+                        with open(templates_path, 'rb') as f:
+                            templates = sd.load(f)
+                    else:
+                        templates = {"default_template": {"text_prompt": "", "image_prompt": ""}}
                     
                     self.agents['prompt_agent'] = PromptAgent(
                         mcp_server=mcp_server,
@@ -125,43 +185,81 @@ class AIAssistant:
                         security_checker=self.security_checker,
                         metrics_collector=self.metrics_collector
                     )
+                    
                 elif agent_name == 'copywriter':
                     self.agents['copywriter'] = CopywriterAgent(
                         mcp_server=mcp_server,
                         security_checker=self.security_checker,
                         metrics_collector=self.metrics_collector
                     )
+                    
                 elif agent_name == 'banner_designer':
+                    # Передаем конфигурацию Stable Diffusion
+                    sd_config = self.config.get('stable_diffusion', {})
+                    
+                    # Обновляем конфиг для segmind/tiny-sd
+                    sd_config.update({
+                        'base_model': "segmind/tiny-sd",
+                        'upscale_model': "stabilityai/stable-diffusion-x4-upscaler",
+                        'lowres_width': 640,
+                        'lowres_height': 360,
+                        'hires_width': 1920,
+                        'hires_height': 1080,
+                        'steps': 20,
+                        'upscale_steps': 20,
+                        'guidance_scale': 7.5
+                    })
+                    
                     self.agents['banner_designer'] = BannerDesignerAgent(
-                        mcp_server=mcp_server,
+                        mcp_server=mcp_server,  # Передаем, но не используется
                         security_checker=self.security_checker,
-                        metrics_collector=self.metrics_collector
+                        metrics_collector=self.metrics_collector,
+                        config=sd_config
                     )
+                    
                 elif agent_name == 'qa_compliance':
+                    # Загружаем правила для QA
+                    rules_path = Path('prompt_engine/telegram_rules.json')
+                    if not rules_path.exists():
+                        # Создаем минимальные правила
+                        minimal_rules = {
+                            "checks": [
+                                {"name": "text_length", "max_chars": 160},
+                                {"name": "no_profanity", "enabled": True}
+                            ]
+                        }
+                        with open(rules_path, 'w') as f:
+                            import json
+                            json.dump(minimal_rules, f, indent=2, ensure_ascii=False)
+                    
+                    with open(rules_path, 'rb') as f:
+                        rules = sd.load(f)
+                    
                     self.agents['qa_compliance'] = QAComplianceAgent(
-                        mcp_server=mcp_server,
+                        mcp_server=mcp_server,  # Передаем, но не используется
                         security_checker=self.security_checker,
-                        metrics_collector=self.metrics_collector
+                        metrics_collector=self.metrics_collector,
+                        rules=rules
                     )
-                  
+                
                 log_module_initialization(f"Agent: {agent_name}")
-                info(f"Агент {agent_name} инициализирован с mcp_server: {mcp_server}")
-                info(f"Инструменты в mcp_server: {list(mcp_server.registry._tools.keys())}")
-            
-            # Регистрация разрешений для агентов
-            mcp_server.set_agent_permissions("PromptAgent", [])
-            mcp_server.set_agent_permissions("CopywriterAgent", ["text.generate"])
-            mcp_server.set_agent_permissions("BannerDesignerAgent", ["image.generate"])
-            mcp_server.set_agent_permissions("QAComplianceAgent", ["compliance.check"])
+                success(f"Агент {agent_name} инициализирован", exp=True)
             
             info(f"Загружено {len(self.agents)} специализированных агентов", exp=True)
-              
+            
+            # Регистрация разрешений для агентов (для совместимости)
+            mcp_server.set_agent_permissions("PromptAgent", [])
+            mcp_server.set_agent_permissions("CopywriterAgent", [])
+            mcp_server.set_agent_permissions("BannerDesignerAgent", [])
+            mcp_server.set_agent_permissions("QAComplianceAgent", [])
+            
         except Exception as e:
             error(f"Ошибка инициализации агентов: {e}", exp=True)
+            import traceback
+            traceback.print_exc()
             warning("Продолжение в базовом режиме без агентов", exp=True)
             self.agents = {}
-        
-    
+
     async def _connect_storage(self):
         """Подключение к хранилищам данных"""
         try:
@@ -286,6 +384,8 @@ class AIAssistant:
             
         except Exception as e:
             error(f"Критическая ошибка при обработке запроса {request_id}: {e}", exp=True)
+            import traceback
+            traceback.print_exc()
             
             return {
                 'success': False,
@@ -303,59 +403,52 @@ class AIAssistant:
         """Обработка запроса с использованием специализированных агентов"""
         info("Использование специализированных агентов", exp=True)
         
-        # Агент промптов
-        if 'prompt_agent' in self.agents:
-            prompt_result = await self.agents['prompt_agent'].generate_specification(
-                product_description=product_description,
-                style=style_preference
-            )
-            result['components']['specification'] = prompt_result
+        # Создаем контекст для конвейера
+        context = {
+            "product": product_description,
+            "product_type": "product",  # Можно извлечь из описания
+            "audience": result['target_audience'] or "общая аудитория",
+            "goal": "продажи",
+            "language": "ru",
+            "style": style_preference
+        }
         
-        # Копирайтер агент
-        if 'copywriter' in self.agents:
-            copy_result = await self.agents['copywriter'].generate_ad_copy(
-                product_description=product_description,
-                style=style_preference
-            )
-            result['components']['ad_text'] = copy_result
-        
-        # Дизайнер агент
-        if 'banner_designer' in self.agents:
-            design_result = await self.agents['banner_designer'].design_banner(
-                product_description=product_description,
-                style=style_preference
-            )
-            result['components']['design'] = design_result
-        
-        # Агент проверки качества
-        if 'qa_compliance' in self.agents and 'ad_text' in result['components']:
-            qa_result = await self.agents['qa_compliance'].check_compliance(
-                ad_text=result['components']['ad_text'],
-                design_data=result['components'].get('design')
-            )
-            result['components']['qa_check'] = qa_result
-        
-        # Сохранение текста в PostgreSQL
-        if 'ad_text' in result['components']:
-            # Экранирование данных для предотвращения SQL-инъекций
-            text_content = result['components']['ad_text'].replace("'", "''")
-            request_id = result['request_id'].replace("'", "''")
-            style_preference_safe = style_preference.replace("'", "''")
+        # Запускаем конвейер агентов
+        try:
+            # 1. PromptAgent создает ТЗ
+            if 'prompt_agent' in self.agents:
+                info("Шаг 1: PromptAgent создает ТЗ", exp=True)
+                context = await self.agents['prompt_agent'].handle(context)
+                result['components']['specification'] = context
             
-            text_id = await self.postgres_storage.save_text_record(
-                text_content=text_content,
-                version_metadata={
-                    'request_id': request_id,
-                    'style': style_preference_safe,
-                    'model': 'text_llm'
-                },
-                model_name='text_llm',
-                request_id=request_id
-            )
-            if text_id:
-                result['components']['text_storage_id'] = text_id
-                result['components']['text_storage'] = 'postgres'
-                success("Текст сохранен в PostgreSQL", exp=True)
+            # 2. CopywriterAgent пишет текст
+            if 'copywriter' in self.agents:
+                info("Шаг 2: CopywriterAgent пишет текст", exp=True)
+                context = await self.agents['copywriter'].handle(context)
+                result['components']['ad_text'] = context.get('final_advertising_text', '')
+            
+            # 3. BannerDesignerAgent создает баннер
+            if 'banner_designer' in self.agents:
+                info("Шаг 3: BannerDesignerAgent создает баннер", exp=True)
+                context = await self.agents['banner_designer'].handle(context)
+                result['components']['banner_url'] = context.get('banner_url', '')
+                result['components']['banner_generated'] = context.get('banner_generated', False)
+            
+            # 4. QAComplianceAgent проверяет
+            if 'qa_compliance' in self.agents:
+                info("Шаг 4: QAComplianceAgent проверяет качество", exp=True)
+                context = await self.agents['qa_compliance'].handle(context)
+                result['components']['qa_status'] = context.get('qa_status', 'UNKNOWN')
+                result['components']['qa_report'] = context.get('qa_report', [])
+            
+            # Сохраняем полный контекст
+            result['components']['pipeline_context'] = context
+            
+        except Exception as e:
+            error(f"Ошибка в конвейере агентов: {e}", exp=True)
+            import traceback
+            traceback.print_exc()
+            raise
     
     async def _process_basic(
         self,
@@ -376,41 +469,6 @@ class AIAssistant:
             result['components']['ad_text'] = ad_text
             success("Текст баннера сгенерирован", exp=True)
             
-            # Валидация промпта для изображения
-            if include_image:
-                prompt_valid, prompt_message = await self.security_checker.validate_image_prompt(
-                    sd_prompt=product_description,
-                    verbose=True
-                )
-                
-                if prompt_valid:
-                    # Генерация изображения
-                    try:
-                        image = await self.llm_router.generate_banner_image(
-                            image_prompt=product_description
-                        )
-                        result['components']['image'] = image
-                        result['components']['image_generated'] = True
-                        success("Изображение баннера сгенерировано", exp=True)
-                    except Exception as e:
-                        warning(f"Ошибка генерации изображения: {e}", exp=True)
-                        result['components']['image_generated'] = False
-                        result['components']['image_error'] = str(e)
-                else:
-                    warning(f"Промпт не прошел валидацию: {prompt_message}", exp=True)
-                    result['components']['image_generated'] = False
-                    result['components']['image_validation_failed'] = prompt_message
-            else:
-                result['components']['image_generated'] = False
-            
-            # Сохранение сгенерированного изображения в S3
-            if include_image and 'image' in result['components']:
-                image_url = await self.s3_storage.upload_image(result['components']['image'])
-                if image_url:
-                    result['components']['image_url'] = image_url
-                    result['components']['image_storage'] = 's3'
-                    success("Изображение сохранено в S3", exp=True)
-                 
         except Exception as e:
             error(f"Ошибка при генерации контента: {e}", exp=True)
             raise
@@ -511,82 +569,171 @@ class AIAssistant:
     async def run_advertising_pipeline(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Запуск конвейера создания рекламных материалов.
-        
-        Args:
-            context: Контекст с входными данными для конвейера
-            
-        Returns:
-            Словарь с результатами работы конвейера
+        Упрощенная версия без инструментов MCP.
         """
         info("Запуск конвейера создания рекламных материалов", exp=True, textwrapping=True, wrapint=80)
         
-        # Инициализация MCPServer
-        registry = ToolRegistry()
-        retry_policy = SimpleRetryPolicy()
-        cache_policy = InMemoryCachePolicy()
+        # Создаем упрощенный MCPServer
         mcp_server = MCPServer(
-            registry=registry,
-            retry_policy=retry_policy,
-            cache_policy=cache_policy,
+            registry=ToolRegistry(),  # Пустой реестр
+            retry_policy=SimpleRetryPolicy(retries=2, delay=0.5),
+            cache_policy=InMemoryCachePolicy(),
             security_checker=self.security_checker
         )
         
-        # Регистрация инструментов
-        from agents.tools.image_generation_tool import ImageGenerationTool
-        from agents.tools.compliance_check_tool import ComplianceCheckTool
+        # Используем пути относительно текущей директории
+        rules_path = Path('prompt_engine/telegram_rules.json')
+        templates_path = Path('prompt_engine/prompt_templates.json')
         
-        image_tool = ImageGenerationTool()
-        compliance_tool = ComplianceCheckTool()
+        # Проверяем существование файлов
+        if not rules_path.exists():
+            # Пробуем альтернативные пути
+            possible_paths = [
+                Path('prompt_engine/telegram_rules.json'),
+                Path('/content/master-of-tg-ads/prompt_engine/telegram_rules.json'),
+                Path.cwd() / 'prompt_engine' / 'telegram_rules.json',
+                Path(__file__).parent.parent / 'prompt_engine' / 'telegram_rules.json'
+            ]
+            
+            found = False
+            for path in possible_paths:
+                if path.exists():
+                    rules_path = path
+                    info(f"Найден файл правил: {rules_path}", exp=True)
+                    found = True
+                    break
+            
+            if not found:
+                # Создаем минимальные правила
+                warning("Файл правил не найден, создаю минимальные...", exp=True)
+                rules_path = Path.cwd() / 'prompt_engine' / 'telegram_rules.json'
+                rules_path.parent.mkdir(parents=True, exist_ok=True)
+                
+                minimal_rules = {
+                    "version": "1.0",
+                    "description": "Минимальные правила для тестирования",
+                    "checks": [
+                        {"name": "text_length", "max_chars": 160},
+                        {"name": "no_profanity", "enabled": True}
+                    ]
+                }
+                
+                with open(rules_path, 'w') as f:
+                    import json
+                    json.dump(minimal_rules, f, indent=2, ensure_ascii=False)
         
-        mcp_server.registry.register(image_tool)
-        mcp_server.registry.register(compliance_tool)
+        if not templates_path.exists():
+            # Создаем минимальный шаблон
+            warning("Файл шаблонов не найден, создаю минимальный...", exp=True)
+            templates_path = Path.cwd() / 'prompt_engine' / 'prompt_templates.json'
+            templates_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            minimal_template = {
+                "default_template": {
+                    "text_prompt": "Создай рекламный текст для {product}. Аудитория: {audience}. Цель: {goal}",
+                    "image_prompt": "Создай баннер для {product}. Аудитория: {audience}"
+                }
+            }
+            
+            with open(templates_path, 'w') as f:
+                import json
+                json.dump(minimal_template, f, indent=2, ensure_ascii=False)
         
-        info(f"Зарегистрирован инструмент: {image_tool.name}")
-        info(f"Зарегистрирован инструмент: {compliance_tool.name}")
-        info(f"Инструменты в реестре: {list(mcp_server.registry._tools.keys())}")
-        
-        # Загрузка правил и шаблонов
-        with open('prompt_engine/telegram_rules.json', 'rb') as f:
+        # Загружаем правила и шаблоны
+        with open(rules_path, 'rb') as f:
             rules = sd.load(f)
-        with open('prompt_engine/prompt_templates.json', 'rb') as f:
+        with open(templates_path, 'rb') as f:
             templates = sd.load(f)
         
+        # Конфигурация для BannerDesignerAgent
+        sd_config = self.config.get('stable_diffusion', {}).copy()
+        sd_config.update({
+            'base_model': "segmind/tiny-sd",
+            'upscale_model': "stabilityai/stable-diffusion-x4-upscaler",
+            'lowres_width': 640,
+            'lowres_height': 360,
+            'hires_width': 1920,
+            'hires_height': 1080,
+            'steps': 20,
+            'upscale_steps': 20,
+            'guidance_scale': 7.5
+        })
+        
         # Инициализация агентов
-        agents = {
-            "architect": PromptAgent(mcp_server=mcp_server, rules=rules, templates=templates),
-            "writer": CopywriterAgent(mcp_server=mcp_server),
-            "designer": BannerDesignerAgent(mcp_server=mcp_server),
-            "inspector": QAComplianceAgent(mcp_server=mcp_server)
-        }
-    
-        # Регистрация разрешений для агентов
-        mcp_server.set_agent_permissions("CopywriterAgent", ["text.generate"])
-        mcp_server.set_agent_permissions("BannerDesignerAgent", ["image.generate"])
-        mcp_server.set_agent_permissions("QAComplianceAgent", ["compliance.check"])
-        mcp_server.set_agent_permissions("PromptAgent", [])
+        try:
+            agents = {
+                "architect": PromptAgent(
+                    mcp_server=mcp_server,
+                    rules=rules,
+                    templates=templates,
+                    security_checker=self.security_checker,
+                    metrics_collector=self.metrics_collector
+                ),
+                "writer": CopywriterAgent(
+                    mcp_server=mcp_server,
+                    security_checker=self.security_checker,
+                    metrics_collector=self.metrics_collector
+                ),
+                "designer": BannerDesignerAgent(
+                    mcp_server=mcp_server,
+                    security_checker=self.security_checker,
+                    metrics_collector=self.metrics_collector,
+                    config=sd_config
+                ),
+                "inspector": QAComplianceAgent(
+                    mcp_server=mcp_server,
+                    security_checker=self.security_checker,
+                    metrics_collector=self.metrics_collector,
+                    rules=rules
+                )
+            }
+        except Exception as e:
+            error(f"Ошибка инициализации агентов: {e}", exp=True)
+            raise
         
         try:
             # Шаг 1: Архитектор создает ТЗ
+            info("Шаг 1: Архитектор создает ТЗ", exp=True, textwrapping=True, wrapint=80)
             context = await agents["architect"].handle(context)
             
             # Шаг 2: Копирайтер пишет текст
+            info("Шаг 2: Копирайтер пишет текст", exp=True, textwrapping=True, wrapint=80)
             context = await agents["writer"].handle(context)
             
             # Шаг 3: Дизайнер рисует баннер
+            info("Шаг 3: Дизайнер рисует баннер", exp=True, textwrapping=True, wrapint=80)
             context = await agents["designer"].handle(context)
             
             # Шаг 4: Инспектор выносит вердикт
+            info("Шаг 4: Инспектор проверяет качество", exp=True, textwrapping=True, wrapint=80)
             context = await agents["inspector"].handle(context)
             
             # Финальный результат
             success("Конвейер завершен успешно!", exp=True, textwrapping=True, wrapint=80)
-            return context
+            
+            # Форматируем результат
+            result = {
+                "qa_status": context.get("qa_status", "UNKNOWN"),
+                "final_advertising_text": context.get("final_advertising_text", ""),
+                "banner_url": context.get("banner_url", ""),
+                "qa_report": context.get("qa_report", []),
+                "pipeline_success": True,
+                "components": {
+                    "specification": context.get("target_text_prompt", ""),
+                    "banner_generated": context.get("banner_generated", False)
+                }
+            }
+            
+            return result
             
         except Exception as e:
             error(f"Критический сбой конвейера: {e}", exp=True, textwrapping=True, wrapint=80)
+            import traceback
+            traceback.print_exc()
             raise
 
 
+# Пример использования
 async def main_example():
     """Пример использования ИИ-ассистента"""
     # Инициализация ассистента
@@ -611,15 +758,16 @@ async def main_example():
             print(f"\nТекст баннера:")
             print(f"{result['components']['ad_text']}")
         
-        if 'image_generated' in result.get('components', {}):
-            if result['components']['image_generated']:
+        if 'banner_generated' in result.get('components', {}):
+            if result['components']['banner_generated']:
                 print(f"\nИзображение: сгенерировано успешно")
+                print(f"URL: {result['components'].get('banner_url', 'N/A')}")
             else:
                 print(f"\nИзображение: не сгенерировано")
         
-        if 'compliance_check' in result:
-            status = "ДА" if result['compliance_check']['passed'] else "НЕТ"
-            print(f"\n{status} Проверка на соответствие: {result['compliance_check']['message']}")
+        if 'qa_status' in result.get('components', {}):
+            status = result['components']['qa_status']
+            print(f"\nСтатус QA: {status}")
     
     else:
         print(f"\nОшибка: {result.get('error', 'Unknown error')}")

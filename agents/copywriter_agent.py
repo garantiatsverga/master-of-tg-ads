@@ -4,7 +4,7 @@ from colordebug import *
 
 class CopywriterAgent(BaseAgent):
     """
-    Его задачапревратить текстовое ТЗ (prompt) в финальный рекламный пост.
+    Его задача - превратить текстовое ТЗ (prompt) в финальный рекламный пост.
     """
 
     def __init__(

@@ -1,10 +1,15 @@
 import asyncio
-import sys
-import os
 from pathlib import Path
 from typing import Dict, Any
 from colordebug import *
 from ai_assistant.src.ai_assistant import AIAssistant
+
+import sys
+import os
+sys.path.insert(0, '/content/master-of-tg-ads')
+project_dir = '/content/master-of-tg-ads'
+os.chdir(project_dir)
+print(f"Изменили рабочую директорию на: {os.getcwd()}")
 
 async def main():
 
@@ -15,13 +20,13 @@ async def main():
     # Инициализируем AIAssistant
     assistant = AIAssistant()
 
-    # Входные данные (Бриф от клиента)
     context: Dict[str, Any] = {
-        "product": "Апельсиновый сок 'Солнечный'",
-        "product_type": "Напитки",
-        "audience": "Мамы детей от 3 до 7 лет",
-        "goal": "Продажи через Telegram канал",
-        "language": "ru"
+        "product": "New phone X100 Pro",
+        "product_type": "Electronics/Smartphones",
+        "audience": "Youngings 18-30 y.o., tech and photo enjoyers",
+        "goal": "Telegram channels sales",
+        "language": "en",
+        "features": "108 MP camera, aluminium and glass in design, night filming"
     }
 
     try:
