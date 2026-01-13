@@ -54,11 +54,22 @@ class AIAssistant:
         log_module_initialization("ConfigManager")
         
         # Настройка логирования
+        log_file_path = str(self.base_dir / self.config.get('system', {}).get('log_file', 'ai_assistant.log'))
         setup_logging(
-            log_file=str(self.base_dir / self.config.get('system', {}).get('log_file', 'ai_assistant.log')),
+            log_file=log_file_path,
             log_level=self.config.get('system', {}).get('log_level', 'info'),
             console_output=True
         )
+        
+        # Проверка и исправление кодировки файла лога
+        from ai_assistant.src.observability.logging_setup import safe_read_file, safe_write_file
+        if os.path.exists(log_file_path):
+            try:
+                content = safe_read_file(log_file_path)
+                if content:
+                    safe_write_file(log_file_path, content, encoding='utf-8')
+            except Exception as e:
+                print(f"Ошибка при исправлении кодировки файла лога: {e}")
         
         # Инициализация компонентов
         self.security_checker = SecurityChecker(self.config)

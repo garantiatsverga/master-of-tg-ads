@@ -8,6 +8,55 @@ import re
 # Добавляем корень проекта в путь Python
 sys.path.append(str(Path(__file__).parent.parent))
 
+def safe_read_file(file_path, encoding='utf-8'):
+    """
+    Безопасное чтение файла с обработкой кодировки
+    
+    Args:
+        file_path (str): Путь к файлу
+        encoding (str): Кодировка по умолчанию
+    
+    Returns:
+        str: Содержимое файла
+    """
+    encodings_to_try = ['utf-8', 'windows-1251', 'cp1251', 'iso-8859-1']
+    
+    for enc in encodings_to_try:
+        try:
+            with open(file_path, 'r', encoding=enc) as f:
+                return f.read()
+        except UnicodeDecodeError:
+            continue
+        except Exception as e:
+            print(f"Ошибка при чтении файла {file_path} в кодировке {enc}: {e}")
+            continue
+    
+    # Если ни одна кодировка не подходит, пытаемся прочитать в бинарном режиме
+    try:
+        with open(file_path, 'rb') as f:
+            content = f.read()
+            return content.decode('utf-8', errors='replace')
+    except Exception as e:
+        print(f"Ошибка при чтении файла {file_path} в бинарном режиме: {e}")
+        return ""
+
+def safe_write_file(file_path, content, encoding='utf-8'):
+    """
+    Безопасная запись в файл с обработкой кодировки
+    
+    Args:
+        file_path (str): Путь к файлу
+        content (str): Содержимое для записи
+        encoding (str): Кодировка для записи
+    """
+    try:
+        with open(file_path, 'w', encoding=encoding) as f:
+            f.write(content)
+        return True
+    except Exception as e:
+        print(f"Ошибка при записи в файл {file_path}: {e}")
+        return False
+
 # Значения конфигурации по умолчанию
 DEFAULT_LOG_FILE = "app.log"
 DEFAULT_MAX_LINES = 5000
@@ -98,8 +147,17 @@ def setup_logging(
     add_sensitive_keys(SENSITIVE_KEYS)
     
     # Логирование инициализации
-    info(f"Логирование инициализировано: file={log_file}, format={log_format}, level={log_level}", 
+    info(f"Логирование инициализировано: file={log_file}, format={log_format}, level={log_level}",
          exp=True, textwrapping=True, wrapint=wrap_width)
+    
+    # Проверка и исправление кодировки файла лога
+    if os.path.exists(log_file):
+        try:
+            content = safe_read_file(log_file)
+            if content:
+                safe_write_file(log_file, content, encoding='utf-8')
+        except Exception as e:
+            print(f"Ошибка при исправлении кодировки файла лога: {e}")
 
 def log_application_start():
     """

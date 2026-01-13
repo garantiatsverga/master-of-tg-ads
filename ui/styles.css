@@ -1,78 +1,615 @@
+/* ============================================
+   ОСНОВНЫЕ СТИЛИ СТРАНИЦЫ
+   ============================================ */
+
 .main {
-    background-color: #1e1e1e;
-    color: #ffffff;
+    background-color: #0f172a;
+    color: #f8fafc;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
-/* Input field styling */
-.stTextInput>div>div>input {
-    background-color: #2e2e2e;
-    color: #ffffff;
-    border: 1px solid #444444;
+/* Убираем стандартные отступы Streamlit */
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
 }
 
-/* Button styling */
-.stButton>button {
-    background-color: #4a4a4a;
-    color: #ffffff;
-    border: 1px solid #666666;
+/* ============================================
+   ЗАГОЛОВКИ И ТЕКСТ
+   ============================================ */
+
+/* Главный заголовок */
+h1 {
+    color: #f8fafc !important;
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1.5rem !important;
 }
 
-.stButton>button:hover {
-    background-color: #5a5a5a;
+h2 {
+    color: #e2e8f0 !important;
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    margin-top: 1.5rem !important;
+    margin-bottom: 1rem !important;
 }
 
-/* Chat message styling */
-.chat-message {
-    padding: 1rem;
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    display: flex;
-    flex-direction: column;
+h3 {
+    color: #cbd5e1 !important;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
 }
 
-.chat-message.user {
-    background-color: #2b313e;
-    align-self: flex-end;
+/* Параграфы и текст */
+p {
+    color: #94a3b8 !important;
+    line-height: 1.6 !important;
 }
 
-.chat-message.bot {
-    background-color: #3a3f4a;
-    align-self: flex-start;
+/* ============================================
+   ПОЛЯ ВВОДА
+   ============================================ */
+
+/* Текстовые поля */
+.stTextInput > div > div > input,
+.stTextArea > div > div > textarea {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border: 2px solid #334155 !important;
+    border-radius: 4px !important;
+    padding: 14px 18px !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
 }
 
-.chat-message .message-content {
-    color: #ffffff;
+.stTextInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+    outline: none !important;
 }
 
-/* Sidebar styling */
+/* Placeholder */
+.stTextInput > div > div > input::placeholder,
+.stTextArea > div > div > textarea::placeholder {
+    color: #64748b !important;
+}
+
+/* ============================================
+   КНОПКИ
+   ============================================ */
+
+/* Основные кнопки */
+.stButton > button {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 14px 28px !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    width: 100% !important;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3) !important;
+}
+
+.stButton > button:active {
+    transform: translateY(0) !important;
+}
+
+/* Вторичные кнопки */
+.stButton > button[kind="secondary"] {
+    background: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+.stButton > button[kind="secondary"]:hover {
+    background: #36a527 !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Отключенные кнопки */
+.stButton > button:disabled {
+    background: #36a527 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ============================================
+   САЙДБАР
+   ============================================ */
+
 .stSidebar {
-    background-color: #252526;
+    background-color: #1e293b !important;
+    border-right: 1px solid #334155 !important;
 }
 
-/* Header styling */
-.stHeader {
-    color: #ffffff;
-    border-bottom: 1px solid #444444;
-    min-height: 0px;
-    display: flex;
-    align-items: center;
+/* Заголовки в сайдбаре */
+.stSidebar h1,
+.stSidebar h2,
+.stSidebar h3 {
+    color: #f8fafc !important;
 }
 
-/* Main title styling */
-.stTitle {
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
+/* Элементы в сайдбаре */
+.stSidebar .stSelectbox,
+.stSidebar .stTextInput,
+.stSidebar .stTextArea {
+    background-color: #1e293b !important;
 }
 
-/* Success message styling */
+/* Кнопки в сайдбаре */
+.stSidebar .stButton > button {
+    background: #334155 !important;
+    margin: 8px 0 !important;
+}
+
+.stSidebar .stButton > button:hover {
+    background: #36a527 !important;
+}
+
+/* ============================================
+   ВЫПАДАЮЩИЕ СПИСКИ
+   ============================================ */
+
+.stSelectbox > div > div {
+    background-color: #1e293b !important;
+    border: 2px solid #334155 !important;
+    border-radius: 12px !important;
+}
+
+.stSelectbox > div > div:hover {
+    border-color: #6366f1 !important;
+}
+
+/* Опции в выпадающем списке */
+.css-1nmdiq5-menu {
+    background-color: #1e293b !important;
+    border: 2px solid #334155 !important;
+    border-radius: 12px !important;
+}
+
+.css-1n7v3ny-option {
+    background-color: #6366f1 !important;
+    color: white !important;
+}
+
+.css-1n7v3ny-option:hover {
+    background-color: #4f46e5 !important;
+}
+
+/* ============================================
+   УВЕДОМЛЕНИЯ (ALERTS)
+   ============================================ */
+
+.stAlert {
+    border-radius: 12px !important;
+    border: none !important;
+    padding: 20px !important;
+    margin: 15px 0 !important;
+}
+
+/* Успех */
 .stSuccess {
-    background-color: #2d5a3d;
-    color: #ffffff;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(21, 128, 61, 0.15) 100%) !important;
+    color: #4ade80 !important;
+    border-left: 4px solid #4ade80 !important;
 }
 
-/* Error message styling */
+/* Ошибка */
 .stError {
-    background-color: #5a2d2d;
-    color: #ffffff;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(185, 28, 28, 0.15) 100%) !important;
+    color: #f87171 !important;
+    border-left: 4px solid #f87171 !important;
+}
+
+/* Предупреждение */
+.stWarning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(180, 83, 9, 0.15) 100%) !important;
+    color: #fbbf24 !important;
+    border-left: 4px solid #fbbf24 !important;
+}
+
+/* Информация */
+.stInfo {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(29, 78, 216, 0.15) 100%) !important;
+    color: #60a5fa !important;
+    border-left: 4px solid #60a5fa !important;
+}
+
+/* ============================================
+   СПИННЕРЫ И ИНДИКАТОРЫ
+   ============================================ */
+
+.stSpinner > div {
+    border-color: #6366f1 !important;
+    border-right-color: transparent !important;
+}
+
+/* ============================================
+   ИЗОБРАЖЕНИЯ
+   ============================================ */
+
+img {
+    border-radius: 16px !important;
+    border: 3px solid #334155 !important;
+    transition: all 0.3s ease !important;
+}
+
+img:hover {
+    border-color: #6366f1 !important;
+    transform: scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ============================================
+   РАЗДЕЛИТЕЛИ
+   ============================================ */
+
+.stDivider {
+    border-color: #334155 !important;
+    margin: 30px 0 !important;
+}
+
+/* ============================================
+   МЕТРИКИ И СТАТИСТИКА
+   ============================================ */
+
+.stMetric {
+    background-color: #1e293b !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    border: 2px solid #334155 !important;
+    transition: all 0.3s ease !important;
+}
+
+.stMetric:hover {
+    border-color: #6366f1 !important;
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+.stMetric [data-testid="stMetricValue"] {
+    color: #f8fafc !important;
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+}
+
+.stMetric [data-testid="stMetricLabel"] {
+    color: #94a3b8 !important;
+    font-size: 0.9rem !important;
+}
+
+/* ============================================
+   ЭКСПАНДЕРЫ (РАСКРЫВАЮЩИЕСЯ ПАНЕЛИ)
+   ============================================ */
+
+.streamlit-expanderHeader {
+    background-color: #1e293b !important;
+    border-radius: 12px !important;
+    border: 2px solid #334155 !important;
+    color: #f8fafc !important;
+    font-weight: 600 !important;
+    padding: 16px 20px !important;
+    margin: 10px 0 !important;
+}
+
+.streamlit-expanderHeader:hover {
+    background-color: #334155 !important;
+    border-color: #36a527 !important;
+}
+
+.streamlit-expanderContent {
+    background-color: #1e293b !important;
+    border-radius: 0 0 12px 12px !important;
+    border: 2px solid #334155 !important;
+    border-top: none !important;
+    padding: 20px !important;
+    margin-bottom: 20px !important;
+}
+
+/* ============================================
+   КАРТОЧКИ И КОНТЕЙНЕРЫ
+   ============================================ */
+
+/* Основные контейнеры */
+.stContainer {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+    border-radius: 20px !important;
+    padding: 30px !important;
+    border: 2px solid #334155 !important;
+    margin-bottom: 25px !important;
+    transition: all 0.3s ease !important;
+}
+
+.stContainer:hover {
+    border-color: #6366f1 !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ============================================
+   ЧАТ И СООБЩЕНИЯ
+   ============================================ */
+
+.stChatMessage {
+    border-radius: 20px !important;
+    padding: 20px !important;
+    margin: 15px 0 !important;
+    border: 2px solid #334155 !important;
+}
+
+/* Сообщения пользователя */
+.stChatMessage[data-testid="stChatMessageUser"] {
+    background: linear-gradient(135deg, #334155 0%, #1e293b 100%) !important;
+    border-color: #36a527 !important;
+}
+
+/* Сообщения бота */
+.stChatMessage[data-testid="stChatMessageAssistant"] {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+    border-color: #334155 !important;
+}
+
+/* ============================================
+   ТАБЛИЦЫ И ДАННЫЕ
+   ============================================ */
+
+table {
+    background-color: #1e293b !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+}
+
+thead {
+    background-color: #334155 !important;
+}
+
+th {
+    color: #f8fafc !important;
+    font-weight: 600 !important;
+    padding: 16px !important;
+}
+
+td {
+    color: #cbd5e1 !important;
+    padding: 14px 16px !important;
+    border-bottom: 1px solid #334155 !important;
+}
+
+tr:hover {
+    background-color: #334155 !important;
+}
+
+/* ============================================
+   КОД И ФОРМАТИРОВАНИЕ
+   ============================================ */
+
+code {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    border: 1px solid #334155 !important;
+    font-family: 'Monaco', 'Consolas', monospace !important;
+}
+
+pre {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border-radius: 12px !important;
+    border: 2px solid #334155 !important;
+    padding: 20px !important;
+    overflow-x: auto !important;
+}
+
+/* ============================================
+   ФУТЕР И НИЖНЯЯ ЧАСТЬ
+   ============================================ */
+
+footer {
+    color: #64748b !important;
+    border-top: 1px solid #334155 !important;
+    padding-top: 20px !important;
+    margin-top: 40px !important;
+}
+
+/* ============================================
+   АНИМАЦИИ
+   ============================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(99, 102, 241, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+    }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.shimmer {
+    background: linear-gradient(90deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+}
+
+/* ============================================
+   АДАПТИВНОСТЬ (MOBILE FIRST)
+   ============================================ */
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem !important;
+    }
+    
+    h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    .stButton > button {
+        padding: 12px 20px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .stContainer {
+        padding: 20px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .stMetric {
+        padding: 16px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.75rem !important;
+    }
+    
+    .stButton > button {
+        padding: 10px 16px !important;
+    }
+    
+    .stAlert {
+        padding: 15px !important;
+    }
+}
+
+/* ============================================
+   КАСТОМНЫЕ КЛАССЫ ДЛЯ ДОПОЛНИТЕЛЬНЫХ ЭЛЕМЕНТОВ
+   ============================================ */
+
+/* Карточки результатов */
+.result-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-radius: 20px;
+    padding: 25px;
+    margin: 20px 0;
+    border: 2px solid #334155;
+    transition: all 0.3s ease;
+}
+
+.result-card:hover {
+    border-color: #6366f1;
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin: 0 5px;
+}
+
+.badge-success {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid #4ade80;
+}
+
+.badge-warning {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid #fbbf24;
+}
+
+.badge-error {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid #f87171;
+}
+
+.badge-info {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    border: 1px solid #60a5fa;
+}
+
+/* Progress bars */
+.progress-container {
+    background-color: #1e293b;
+    border-radius: 10px;
+    height: 10px;
+    overflow: hidden;
+    margin: 15px 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+/* Tooltips */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    background-color: #1e293b;
+    color: #f8fafc;
+    text-align: center;
+    border-radius: 8px;
+    padding: 8px 12px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    border: 1px solid #334155;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
 }

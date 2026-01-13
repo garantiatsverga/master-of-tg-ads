@@ -37,6 +37,10 @@
 
 4. После запуска система будет доступна по адресу `http://localhost:8000`.
 
+#### Примечания по настройке
+- Убедитесь, что в `ui/streamlit_app.py` используется правильный импорт `from api.client import get_client, test_connection`.
+- В `api/main.py` параметр `lifespan` должен передаваться как список функций `[lifespan]`.
+
 #### Метод 2: Ручная установка
 
 1. Клонируйте репозиторий:
@@ -48,7 +52,8 @@
 2. Создайте папку для моделей Stable Diffusion и скачайте модель:
    ```bash
    mkdir -p stable-diffusion-models
-   # Скачайте модель (например, v1-5-pruned-emaonly.ckpt) и поместите ее в папку stable-diffusion-models
+   # Скачайте модель segmind/tiny-sd с Hugging Face:
+   # wget https://huggingface.co/segmind/tiny-sd/resolve/main/tiny-sd.ckpt -O stable-diffusion-models/tiny-sd.ckpt
    ```
 
 3. Создайте файл `.env` на основе `.env.example` и настройте необходимые переменные окружения.
@@ -146,6 +151,12 @@
 - **Модуль композиции баннера**: Объединяет изображение и текст в единый баннер.
 - **Веб-интерфейс**: Предоставляет пользовательский интерфейс для взаимодействия с системой.
 - **Stable Diffusion**: Локальный сервис для генерации и апскейла изображений.
+- **API Клиент**: Модуль `api/client.py` для взаимодействия с API генерации баннеров.
+
+## Последние изменения
+- Исправлен импорт `api/client.py` в `ui/streamlit_app.py`.
+- Исправлена ошибка с `lifespan` в `api/main.py`.
+- Обновлена модель Stable Diffusion на `segmind/tiny-sd` с Hugging Face.
 
 ## Лицензия
 

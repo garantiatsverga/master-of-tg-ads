@@ -68,8 +68,8 @@ def download_stable_diffusion_model():
     model_dir = Path("stable-diffusion-models")
     model_dir.mkdir(exist_ok=True)
     
-    model_url = "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.ckpt"
-    model_path = model_dir / "v1-5-pruned-emaonly.ckpt"
+    model_url = "https://huggingface.co/segmind/tiny-sd/resolve/main/tiny-sd.ckpt"
+    model_path = model_dir / "tiny-sd.ckpt"
     
     if model_path.exists():
         print(f"✓ Модель Stable Diffusion уже существует: {model_path}")
