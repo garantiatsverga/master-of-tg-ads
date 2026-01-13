@@ -205,12 +205,13 @@ class AIAssistant:
                     )
                     
                 elif agent_name == 'banner_designer':
-                    # Передаем конфигурацию Stable Diffusion
+                    # Передаем конфигурацию для Kandinsky 2.2
                     sd_config = self.config.get('stable_diffusion', {})
                     
-                    # Обновляем конфиг для segmind/tiny-sd
+                    # Обновляем конфиг для Kandinsky 2.2
                     sd_config.update({
-                        'base_model': "segmind/tiny-sd",
+                        'prior_model': "kandinsky-community/kandinsky-2-2-prior",
+                        'decoder_model': "kandinsky-community/kandinsky-2-2-decoder",
                         'upscale_model': "stabilityai/stable-diffusion-x4-upscaler",
                         'lowres_width': 640,
                         'lowres_height': 360,
@@ -659,7 +660,8 @@ class AIAssistant:
         # Конфигурация для BannerDesignerAgent
         sd_config = self.config.get('stable_diffusion', {}).copy()
         sd_config.update({
-            'base_model': "segmind/tiny-sd",
+            'prior_model': "kandinsky-community/kandinsky-2-2-prior",
+            'decoder_model': "kandinsky-community/kandinsky-2-2-decoder",
             'upscale_model': "stabilityai/stable-diffusion-x4-upscaler",
             'lowres_width': 640,
             'lowres_height': 360,

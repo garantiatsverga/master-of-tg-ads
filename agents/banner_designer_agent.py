@@ -3,7 +3,7 @@ from agents.base_agent import BaseAgent
 from colordebug import *
 from PIL import Image
 import torch
-from diffusers import StableDiffusionPipeline, StableDiffusionUpscalePipeline
+from diffusers import KandinskyV22Pipeline, KandinskyV22PriorPipeline, StableDiffusionUpscalePipeline
 import asyncio
 import tempfile
 import uuid
@@ -12,7 +12,7 @@ from pathlib import Path
 
 class BannerDesignerAgent(BaseAgent):
     """
-    Агент для генерации баннеров с локальным Stable Diffusion.
+    Агент для генерации баннеров с локальным Kandinsky 2.2.
     Сохраняет изображения в директорию проекта.
     """
     
@@ -32,7 +32,8 @@ class BannerDesignerAgent(BaseAgent):
         
         # Конфигурация генерации
         self.config = config or {
-            'base_model': "segmind/tiny-sd",
+            'prior_model': "kandinsky-community/kandinsky-2-2-prior",
+            'decoder_model': "kandinsky-community/kandinsky-2-2-decoder",
             'upscale_model': "stabilityai/stable-diffusion-x4-upscaler",
             'lowres_width': 640,
             'lowres_height': 360,
@@ -44,7 +45,8 @@ class BannerDesignerAgent(BaseAgent):
         }
         
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.pipe = None
+        self.prior_pipe = None
+        self.decoder_pipe = None
         self.upscale_pipe = None
         
         # Определяем директорию для сохранения
@@ -59,26 +61,31 @@ class BannerDesignerAgent(BaseAgent):
         pass
     
     async def _load_models(self):
-        """Загрузка моделей Stable Diffusion"""
-        if self.pipe is None:
+        """Загрузка моделей Kandinsky 2.2"""
+        if self.prior_pipe is None or self.decoder_pipe is None:
             try:
-                info(f"[{self.name}] Загрузка модели: {self.config['base_model']}", exp=True)
-                
-                self.pipe = StableDiffusionPipeline.from_pretrained(
-                    self.config['base_model'],
+                info(f"[{self.name}] Загрузка Prior модели: {self.config['prior_model']}", exp=True)
+                self.prior_pipe = KandinskyV22PriorPipeline.from_pretrained(
+                    self.config['prior_model'],
                     torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
                     safety_checker=None,
                     requires_safety_checker=False
                 )
+                self.prior_pipe = self.prior_pipe.to(self.device)
+                success(f"[{self.name}] Prior модель загружена", exp=True)
                 
-                if self.device == "cuda":
-                    self.pipe.enable_attention_slicing()
-                
-                self.pipe = self.pipe.to(self.device)
-                success(f"[{self.name}] Модель загружена", exp=True)
+                info(f"[{self.name}] Загрузка Decoder модели: {self.config['decoder_model']}", exp=True)
+                self.decoder_pipe = KandinskyV22Pipeline.from_pretrained(
+                    self.config['decoder_model'],
+                    torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+                    safety_checker=None,
+                    requires_safety_checker=False
+                )
+                self.decoder_pipe = self.decoder_pipe.to(self.device)
+                success(f"[{self.name}] Decoder модель загружена", exp=True)
                 
             except Exception as e:
-                error(f"[{self.name}] Ошибка загрузки модели: {e}", exp=True)
+                error(f"[{self.name}] Ошибка загрузки моделей Kandinsky: {e}", exp=True)
                 raise
         
         if self.upscale_pipe is None and self.device == "cuda":
@@ -95,23 +102,38 @@ class BannerDesignerAgent(BaseAgent):
                 self.upscale_pipe = None
     
     async def _generate_image(self, prompt: str, negative_prompt: str = "") -> Image.Image:
-        """Внутренний метод генерации изображения"""
+        """Внутренний метод генерации изображения с использованием Kandinsky 2.2"""
         await self._load_models()
         
         # Отрицательный промпт для улучшения качества
         negative = negative_prompt or "blurry, low quality, watermark, text, ugly, deformed, noisy"
         
         loop = asyncio.get_event_loop()
-        low_res = await loop.run_in_executor(
+        
+        # Сначала получаем эмбеддинги от Prior модели
+        prior_output = await loop.run_in_executor(
             None,
-            lambda: self.pipe(
+            lambda: self.prior_pipe(
                 prompt=prompt,
                 negative_prompt=negative,
                 num_inference_steps=self.config['steps'],
-                guidance_scale=15,
-                width=self.config['lowres_width'],
+                guidance_scale=self.config['guidance_scale']
+            )
+        )
+        
+        # Затем генерируем изображение с Decoder моделью
+        image_embeddings = prior_output.image_embeddings
+        negative_image_embeddings = prior_output.negative_image_embeddings
+        
+        low_res = await loop.run_in_executor(
+            None,
+            lambda: self.decoder_pipe(
+                image_embeddings=image_embeddings,
+                negative_image_embeddings=negative_image_embeddings,
+                num_inference_steps=self.config['steps'],
+                guidance_scale=self.config['guidance_scale'],
                 height=self.config['lowres_height'],
-                num_images_per_prompt=1
+                width=self.config['lowres_width']
             ).images[0]
         )
         

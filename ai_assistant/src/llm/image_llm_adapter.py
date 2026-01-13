@@ -1,58 +1,58 @@
 import torch
-from diffusers import StableDiffusionPipeline, StableDiffusionUpscalePipeline
+from diffusers import KandinskyV22Pipeline, KandinskyV22PriorPipeline, StableDiffusionUpscalePipeline
 from PIL import Image
 from typing import Dict, Any
 import asyncio
 from ai_assistant.src.config_manager import ConfigManager
 from colordebug import info, warning, error
 
-class StableDiffusionAdapter:
-    """Полностью локальный адаптер для segmind/tiny-sd с апскейлом"""
+class KandinskyAdapter:
+    """Полностью локальный адаптер для Kandinsky 2.2 (float16) с апскейлом"""
     
     def __init__(self, config: Dict[str, Any] = None):
         if not config:
             config = ConfigManager.load_config()
-        self.config = config['stable_diffusion']
+        self.config = config.get('stable_diffusion', {})
         
-        # Настройки для segmind/tiny-sd (маленькая быстрая модель)
-        self.base_model = "segmind/tiny-sd"  # Легкая модель для быстрой генерации
+        # Настройки для Kandinsky 2.2
+        self.prior_model = "kandinsky-community/kandinsky-2-2-prior"
+        self.decoder_model = "kandinsky-community/kandinsky-2-2-decoder"
         self.upscale_model = "stabilityai/stable-diffusion-x4-upscaler"  # Для апскейла
         
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         info(f"Используем устройство: {self.device}", exp=True)
         
         # Инициализируем пайплайны асинхронно
-        self.pipe = None
+        self.prior_pipe = None
+        self.decoder_pipe = None
         self.upscale_pipe = None
     
     async def _load_models(self):
-        """Асинхронная загрузка моделей"""
-        if self.pipe is None:
+        """Асинхронная загрузка моделей Kandinsky 2.2"""
+        if self.prior_pipe is None or self.decoder_pipe is None:
             try:
-                info(f"Загрузка базовой модели: {self.base_model}", exp=True)
-                
-                # Загружаем маленькую быструю модель
-                self.pipe = StableDiffusionPipeline.from_pretrained(
-                    self.base_model,
+                info(f"Загрузка Prior модели: {self.prior_model}", exp=True)
+                self.prior_pipe = KandinskyV22PriorPipeline.from_pretrained(
+                    self.prior_model,
                     torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
-                    safety_checker=None,  # Отключаем для скорости
+                    safety_checker=None,
                     requires_safety_checker=False
                 )
+                self.prior_pipe = self.prior_pipe.to(self.device)
+                info(f"Prior модель загружена на {self.device}", exp=True)
                 
-                # Оптимизации
-                if self.device == "cuda":
-                    self.pipe.enable_attention_slicing()
-                    # Не используем xformers если не установлен
-                    try:
-                        self.pipe.enable_xformers_memory_efficient_attention()
-                    except:
-                        pass
-                
-                self.pipe = self.pipe.to(self.device)
-                info(f"Базовая модель загружена на {self.device}", exp=True)
+                info(f"Загрузка Decoder модели: {self.decoder_model}", exp=True)
+                self.decoder_pipe = KandinskyV22Pipeline.from_pretrained(
+                    self.decoder_model,
+                    torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+                    safety_checker=None,
+                    requires_safety_checker=False
+                )
+                self.decoder_pipe = self.decoder_pipe.to(self.device)
+                info(f"Decoder модель загружена на {self.device}", exp=True)
                 
             except Exception as e:
-                error(f"Ошибка загрузки базовой модели: {e}", exp=True)
+                error(f"Ошибка загрузки моделей Kandinsky: {e}", exp=True)
                 raise
         
         if self.upscale_pipe is None and self.device == "cuda":
@@ -71,14 +71,14 @@ class StableDiffusionAdapter:
     async def generate_image(self, prompt: str,
                            negative_prompt: str = None,
                            steps: int = None,
-                           width: int = 640,    # Уменьшаем для скорости
+                           width: int = 640,
                            height: int = 360) -> Image.Image:
-        """Генерация изображения в низком разрешении"""
+        """Генерация изображения с использованием Kandinsky 2.2"""
         
         await self._load_models()
         
-        # Параметры для tiny-sd
-        actual_steps = steps or 20  # Меньше шагов для скорости
+        # Параметры для Kandinsky 2.2
+        actual_steps = steps or 20
         guidance_scale = 7.0
         
         info(f"Генерация {width}x{height} в {actual_steps} шагов", exp=True)
@@ -86,16 +86,31 @@ class StableDiffusionAdapter:
         try:
             # Запускаем генерацию в отдельном потоке
             loop = asyncio.get_event_loop()
-            image = await loop.run_in_executor(
+            
+            # Сначала получаем эмбеддинги от Prior модели
+            prior_output = await loop.run_in_executor(
                 None,
-                lambda: self.pipe(
+                lambda: self.prior_pipe(
                     prompt=prompt,
                     negative_prompt=negative_prompt or "",
                     num_inference_steps=actual_steps,
+                    guidance_scale=guidance_scale
+                )
+            )
+            
+            # Затем генерируем изображение с Decoder моделью
+            image_embeddings = prior_output.image_embeddings
+            negative_image_embeddings = prior_output.negative_image_embeddings
+            
+            image = await loop.run_in_executor(
+                None,
+                lambda: self.decoder_pipe(
+                    image_embeddings=image_embeddings,
+                    negative_image_embeddings=negative_image_embeddings,
+                    num_inference_steps=actual_steps,
                     guidance_scale=guidance_scale,
-                    width=width,
                     height=height,
-                    num_images_per_prompt=1
+                    width=width
                 ).images[0]
             )
             
@@ -104,7 +119,7 @@ class StableDiffusionAdapter:
                 'prompt': prompt,
                 'negative_prompt': negative_prompt,
                 'steps': actual_steps,
-                'model': self.base_model,
+                'model': "Kandinsky 2.2",
                 'size': f"{width}x{height}"
             }
             
@@ -168,7 +183,7 @@ class StableDiffusionAdapter:
             loop = asyncio.get_event_loop()
             result = await loop.run_in_executor(
                 None,
-                lambda: self.pipe(
+                lambda: self.decoder_pipe(
                     prompt=prompt,
                     image=init_image,
                     strength=strength,

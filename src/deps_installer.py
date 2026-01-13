@@ -63,30 +63,49 @@ def check_nvidia_gpu():
         print("Внимание: nvidia-smi не найден. Возможно, драйверы NVIDIA не установлены")
 
 
-def download_stable_diffusion_model():
-    """Скачивание модели Stable Diffusion."""
-    model_dir = Path("stable-diffusion-models")
+def download_kandinsky_model():
+    """Скачивание модели Kandinsky 2.2."""
+    model_dir = Path("kandinsky-models")
     model_dir.mkdir(exist_ok=True)
     
-    model_url = "https://huggingface.co/segmind/tiny-sd/resolve/main/tiny-sd.ckpt"
-    model_path = model_dir / "tiny-sd.ckpt"
+    # Скачиваем обе части модели Kandinsky 2.2
+    prior_model_url = "https://huggingface.co/kandinsky-community/kandinsky-2-2-prior/resolve/main/kandinsky-2-2-prior-fp16.ckpt"
+    decoder_model_url = "https://huggingface.co/kandinsky-community/kandinsky-2-2-decoder/resolve/main/kandinsky-2-2-decoder-fp16.ckpt"
     
-    if model_path.exists():
-        print(f"✓ Модель Stable Diffusion уже существует: {model_path}")
+    prior_model_path = model_dir / "kandinsky-2-2-prior-fp16.ckpt"
+    decoder_model_path = model_dir / "kandinsky-2-2-decoder-fp16.ckpt"
+    
+    if prior_model_path.exists() and decoder_model_path.exists():
+        print(f"✓ Модели Kandinsky 2.2 уже существуют в: {model_dir}")
         return
     
-    print("\nСкачивание модели Stable Diffusion...")
+    print("\nСкачивание модели Kandinsky 2.2...")
     try:
-        # Используем wget или curl для скачивания
-        if shutil.which("wget"):
-            subprocess.run(["wget", "-O", str(model_path), model_url], check=True)
-        elif shutil.which("curl"):
-            subprocess.run(["curl", "-L", "-o", str(model_path), model_url], check=True)
-        else:
-            print("Ошибка: Для скачивания модели требуется wget или curl")
-            sys.exit(1)
+        # Скачиваем Prior модель
+        if not prior_model_path.exists():
+            print("Скачивание Prior модели...")
+            if shutil.which("wget"):
+                subprocess.run(["wget", "-O", str(prior_model_path), prior_model_url], check=True)
+            elif shutil.which("curl"):
+                subprocess.run(["curl", "-L", "-o", str(prior_model_path), prior_model_url], check=True)
+            else:
+                print("Ошибка: Для скачивания модели требуется wget или curl")
+                sys.exit(1)
+            print(f"✓ Prior модель скачана: {prior_model_path}")
         
-        print(f"✓ Модель Stable Diffusion скачана: {model_path}")
+        # Скачиваем Decoder модель
+        if not decoder_model_path.exists():
+            print("Скачивание Decoder модели...")
+            if shutil.which("wget"):
+                subprocess.run(["wget", "-O", str(decoder_model_path), decoder_model_url], check=True)
+            elif shutil.which("curl"):
+                subprocess.run(["curl", "-L", "-o", str(decoder_model_path), decoder_model_url], check=True)
+            else:
+                print("Ошибка: Для скачивания модели требуется wget или curl")
+                sys.exit(1)
+            print(f"✓ Decoder модель скачана: {decoder_model_path}")
+        
+        print(f"✓ Обе модели Kandinsky 2.2 успешно скачаны в: {model_dir}")
     except subprocess.CalledProcessError as e:
         print(f"Ошибка при скачивании модели: {e}")
         sys.exit(1)
@@ -122,8 +141,8 @@ def setup_stable_diffusion():
         print(f"Ошибка при установке зависимостей для Stable Diffusion: {e}")
         sys.exit(1)
     
-    # Скачиваем модель
-    download_stable_diffusion_model()
+    # Скачиваем модель Kandinsky 2.2
+    download_kandinsky_model()
 
 
 def create_env_file():

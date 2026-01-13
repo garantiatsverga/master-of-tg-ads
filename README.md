@@ -52,8 +52,8 @@
 2. Создайте папку для моделей Stable Diffusion и скачайте модель:
    ```bash
    mkdir -p stable-diffusion-models
-   # Скачайте модель segmind/tiny-sd с Hugging Face:
-   # wget https://huggingface.co/segmind/tiny-sd/resolve/main/tiny-sd.ckpt -O stable-diffusion-models/tiny-sd.ckpt
+   # Скачайте модель Kandinsky 2.2 (float16) с Hugging Face:
+   # wget https://huggingface.co/ai-forever/Kandinsky-2.2/resolve/main/kandinsky2-2-decoder-fp16.ckpt -O stable-diffusion-models/kandinsky2-2-decoder-fp16.ckpt
    ```
 
 3. Создайте файл `.env` на основе `.env.example` и настройте необходимые переменные окружения.
@@ -156,7 +156,7 @@
 ## Последние изменения
 - Исправлен импорт `api/client.py` в `ui/streamlit_app.py`.
 - Исправлена ошибка с `lifespan` в `api/main.py`.
-- Обновлена модель Stable Diffusion на `segmind/tiny-sd` с Hugging Face.
+- Обновлена модель Stable Diffusion на `Kandinsky 2.2 (float16)` с Hugging Face.
 
 ## Лицензия
 
